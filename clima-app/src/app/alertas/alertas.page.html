@@ -1,19 +1,101 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-
+  <ion-toolbar color="warning">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
     </ion-buttons>
-
-
-    <ion-title>alertas</ion-title>
+    <ion-title>⚠️ Alertas Meteorológicos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="recarregar()">🔄</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">alertas</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- Carregando -->
+  <div *ngIf="carregando" style="text-align: center; padding: 2rem;">
+    <ion-spinner name="crescent" color="warning"></ion-spinner>
+    <p style="margin-top: 0.5rem; color: var(--ion-color-medium);">Carregando previsão de 7 dias da API...</p>
+  </div>
+
+  <!-- Mensagem de erro se houver -->
+  <ion-card *ngIf="erro" color="danger">
+    <ion-card-content>
+      <p>⚠️ {{ erro }}</p>
+      <ion-button fill="outline" color="light" size="small" (click)="recarregar()">Tentar novamente</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de 7 dias quando os dados chegam da API -->
+  <ion-card *ngIf="!carregando && previsaoDiaria">
+    <ion-card-header>
+      <ion-card-title style="font-size: 1.2rem;">
+        📅 Previsão 7 Dias — {{ cidade }}
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="inset">
+        <ion-item *ngFor="let i of diasIndices; trackBy: trackByDia">
+          <ion-label class="ion-text-wrap" style="padding: 0.5rem 0;">
+            <!-- Data usando DatePipe builtin -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+              <h2 style="font-size: 1.1rem; font-weight: bold; margin: 0;">
+                Dia {{ i + 1 }} — {{ (previsaoDiaria.daily.time[i] + 'T12:00:00') | date:'dd/MM (EEEE)' }}
+              </h2>
+              <ion-badge [color]="temAlerta(i) ? 'warning' : 'success'">
+                {{ temAlerta(i) ? '⚠️ Alerta' : '🟢 Normal' }}
+              </ion-badge>
+            </div>
+
+            <!-- Pipe personalizada 1: descricaoClima -->
+            <p style="font-size: 1rem; font-weight: 600; color: var(--ion-color-primary); margin: 0.25rem 0;">
+              {{ previsaoDiaria.daily.weather_code[i] | descricaoClima }}
+            </p>
+
+            <!-- Pipe builtin 1: DecimalPipe para temperaturas -->
+            <p style="margin: 0.25rem 0;">
+              🌡️ <strong>Máx:</strong> {{ previsaoDiaria.daily.temperature_2m_max[i] | number:'1.1-1' }}°C
+              &nbsp;|&nbsp;
+              <strong>Mín:</strong> {{ previsaoDiaria.daily.temperature_2m_min[i] | number:'1.1-1' }}°C
+            </p>
+
+            <!-- Precipitação e vento com DecimalPipe -->
+            <p style="margin: 0.25rem 0;">
+              🌧️ <strong>Chuva:</strong> {{ previsaoDiaria.daily.precipitation_sum[i] | number:'1.1-1' }} mm
+              &nbsp;|&nbsp;
+              💨 <strong>Vento Máx:</strong> {{ previsaoDiaria.daily.wind_speed_10m_max[i] | number:'1.0-0' }} km/h
+            </p>
+
+            <!-- Pipe personalizada 2: nivelUv -->
+            <p style="margin: 0.25rem 0;">
+              🔆 <strong>Índice UV:</strong> {{ previsaoDiaria.daily.uv_index_max[i] | nivelUv }}
+            </p>
+
+            <!-- Pipe builtin 2: DatePipe para nascer e pôr do sol -->
+            <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--ion-color-medium);">
+              🌅 Nascer do Sol: {{ previsaoDiaria.daily.sunrise[i] | date:'HH:mm' }}
+              &nbsp;•&nbsp;
+              🌇 Pôr do Sol: {{ previsaoDiaria.daily.sunset[i] | date:'HH:mm' }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Legenda de Critérios de Alerta -->
+  <ion-card *ngIf="!carregando && previsaoDiaria">
+    <ion-card-header>
+      <ion-card-title style="font-size: 1.05rem;">ℹ️ Critérios de Alerta Meteorológico</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Um dia recebe o selo <strong>⚠️ Alerta</strong> caso ocorra qualquer uma das condições:</p>
+      <ul>
+        <li>Chuva prevista acumulada &gt; 5 mm</li>
+        <li>Índice UV máximo &gt; 7 (Muito Alto / Extremo)</li>
+        <li>Código meteorológico severo (tempestades ou pancadas fortes)</li>
+      </ul>
+    </ion-card-content>
+  </ion-card>
+
 </ion-content>
