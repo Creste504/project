@@ -20,125 +20,58 @@
         debounce="0"
         animated="true"
       ></ion-searchbar>
-      
-<!-- Histórico de Pesquisas -->
-<ion-card style="margin: 0 0 1.5rem 0;">
 
-  <ion-card-header>
-    <ion-card-title style="font-size: 1.15rem;">
-      Histórico de Pesquisas
-    </ion-card-title>
-  </ion-card-header>
-
-  <ion-card-content>
-
-    <!-- Mensagem quando não houver cidades -->
-    @if (historicoCidades.length === 0) {
-      <div
-        style="text-align: center; padding: 1rem; color: var(--ion-color-medium);">
-        Nenhuma cidade pesquisada ainda.
+      <!-- Indicador de carregamento da API -->
+      <div *ngIf="buscando" style="text-align: center; padding: 0.75rem;">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+        <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--ion-color-medium);">
+          Consultando Open-Meteo Geocoding API...
+        </p>
       </div>
-    }
 
-    <!-- Lista de cidades pesquisadas -->
-    @if (historicoCidades.length > 0) {
-      <ion-list>
+      <!-- Nenhum resultado encontrado -->
+      <p *ngIf="nenhumResultado && !buscando" style="color: var(--ion-color-medium); text-align: center; padding: 0.5rem 0;">
+        Nenhuma cidade encontrada para "{{ termoBusca }}".
+      </p>
 
-        @for (cidade of historicoCidades; track cidade) {
-          <ion-item>
-
-            <ion-label>
-              <h3>{{ cidade }}</h3>
-            </ion-label>
-
-            <!-- Botão para excluir uma cidade -->
-            <ion-button
-              slot="end"
-              fill="clear"
-              color="danger"
-              size="small"
-              (click)="removerCidade(cidade)">
-              Excluir
-            </ion-button>
-
-          </ion-item>
-        }
-
+      <!-- Lista de resultados retornados pela API -->
+      <ion-list *ngIf="resultadosBusca.length > 0">
+        <ion-item
+          *ngFor="let cidade of resultadosBusca"
+          button
+          detail="true"
+          (click)="selecionarCidade(cidade)"
+        >
+          <ion-label>
+            <h3><strong>{{ cidade.name }}</strong></h3>
+            <p>{{ cidade.admin1 ? cidade.admin1 + ' - ' : '' }}{{ cidade.country }}</p>
+            <ion-note style="font-size: 0.75rem;">
+              Lat: {{ cidade.latitude | number:'1.2-2' }}, Lon: {{ cidade.longitude | number:'1.2-2' }}
+            </ion-note>
+          </ion-label>
+          <ion-badge slot="end" color="primary">Ver clima</ion-badge>
+        </ion-item>
       </ion-list>
+    </ion-card-content>
+  </ion-card>
 
-      <!-- Botão para limpar todo o histórico -->
-      <ion-button
-        expand="block"
-        fill="outline"
-        color="danger"
-        (click)="limparHistorico()">
-        Limpar histórico
-      </ion-button>
-    }
+  <!-- 📋 Menu Principal -->
+  <h2 style="margin: 0 0 1rem; font-size: 1.25rem; font-weight: bold;">Menu Principal</h2>
 
-  </ion-card-content>
+  <ion-button routerLink="/detalhes" expand="block" size="large" style="margin-bottom: 0.75rem;">
+    Ver Detalhes do Clima
+  </ion-button>
 
-</ion-card>
+  <ion-button routerLink="/cidades" expand="block" color="secondary" size="large" style="margin-bottom: 0.75rem;">
+    Cidades Salvas
+  </ion-button>
 
-<!-- Indicador de carregamento da API -->
-@if (buscando) {
-  <div style="text-align: center; padding: 0.75rem;">
-    <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--ion-color-medium);">
-      Consultando Open-Meteo Geocoding API...
-    </p>
-  </div>
-}
+  <ion-button routerLink="/alertas" expand="block" color="warning" size="large" style="margin-bottom: 0.75rem;">
+    Alertas Meteorológicos
+  </ion-button>
 
-<!-- Nenhum resultado encontrado -->
-@if (nenhumResultado && !buscando) {
-  <p style="color: var(--ion-color-medium); text-align: center; padding: 0.5rem 0;">
-    Nenhuma cidade encontrada para "{{ termoBusca }}".
-  </p>
-}
-
-<!-- Lista de resultados retornados pela API -->
-@if (resultadosBusca.length > 0) {
-  <ion-list>
-    @for (cidade of resultadosBusca; track cidade.id) {
-      <ion-item
-        button
-        detail="true"
-        (click)="selecionarCidade(cidade)"
-      >
-        <ion-label>
-          <h3><strong>{{ cidade.name }}</strong></h3>
-          <p>{{ cidade.admin1 ? cidade.admin1 + ' - ' : '' }}{{ cidade.country }}</p>
-          <ion-note style="font-size: 0.75rem;">
-            Lat: {{ cidade.latitude | number:'1.2-2' }}, Lon: {{ cidade.longitude | number:'1.2-2' }}
-          </ion-note>
-        </ion-label>
-        <ion-badge slot="end" color="primary">Ver clima</ion-badge>
-      </ion-item>
-    }
-  </ion-list>
-}
-
-</ion-card-content>
-</ion-card>
-
-<!-- Menu Principal -->
-<h2 style="margin: 0 0 1rem; font-size: 1.25rem; font-weight: bold;">Menu Principal</h2>
-
-<ion-button routerLink="/detalhes" expand="block" size="large" style="margin-bottom: 0.75rem;">
-  Ver Detalhes do Clima
-</ion-button>
-
-<ion-button routerLink="/cidades" expand="block" color="secondary" size="large" style="margin-bottom: 0.75rem;">
-  Cidades Salvas
-</ion-button>
-
-<ion-button routerLink="/alertas" expand="block" color="warning" size="large" style="margin-bottom: 0.75rem;">
-  Alertas Meteorológicos
-</ion-button>
-
-<ion-button routerLink="/configuracoes" expand="block" color="medium" size="large">
-  Configurações
-</ion-button>
+  <ion-button routerLink="/configuracoes" expand="block" color="medium" size="large">
+    Configurações
+  </ion-button>
 
 </ion-content>

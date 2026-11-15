@@ -20,10 +20,9 @@ import {
   IonNote,
   IonBadge,
 } from '@ionic/angular';
-import { Subject, Subscription, EMPTY } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
 import { ClimaService, ResultadoGeocodificacao } from '../services/clima.service';
-import { HistoricoService } from '../services/historico';
 
 @Component({
   selector: 'app-home',
@@ -54,7 +53,6 @@ import { HistoricoService } from '../services/historico';
 })
 export class HomePage implements OnInit, OnDestroy {
   termoBusca = '';
-  historicoCidades: string[] = [];
   resultadosBusca: ResultadoGeocodificacao[] = [];
   buscando = false;
   nenhumResultado = false;
@@ -64,13 +62,10 @@ export class HomePage implements OnInit, OnDestroy {
 
   constructor(
     private climaService: ClimaService,
-    private router: Router,
-    private historicoService : HistoricoService
+    private router: Router
   ) {}
 
   ngOnInit() {
-    this.historicoCidades = this.historicoService.obterHistorico();
-
     this.subBusca = this.buscaSubject
       .pipe(
         debounceTime(350),
@@ -80,7 +75,7 @@ export class HomePage implements OnInit, OnDestroy {
             this.buscando = false;
             this.resultadosBusca = [];
             this.nenhumResultado = false;
-            return EMPTY;;
+            return [];
           }
           this.buscando = true;
           this.nenhumResultado = false;
@@ -116,11 +111,6 @@ export class HomePage implements OnInit, OnDestroy {
       .filter(Boolean)
       .join(', ');
 
-      //Salvar a cidade no histórico
-    this.historicoService.adicionarCidade(nomeCompleto);
-      // Atualizar o histórico na tela
-    this.historicoCidades = this.historicoService.obterHistorico();
-
     this.router.navigate(['/detalhes'], {
       queryParams: {
         lat: cidade.latitude,
@@ -135,14 +125,4 @@ export class HomePage implements OnInit, OnDestroy {
     this.resultadosBusca = [];
     this.nenhumResultado = false;
   }
-
- limparHistorico() {
-  this.historicoService.limparHistorico();
-  this.historicoCidades = [];
- }
- 
- removerCidade(cidade: string) {
-  this.historicoService.removerCidade(cidade);
-  this.historicoCidades = this.historicoService.obterHistorico();
-}
 }
