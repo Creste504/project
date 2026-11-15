@@ -9,6 +9,8 @@ import {
 } from '@ionic/angular';
 import { ClimaService, ClimaAtual, PrevisaoHoraria } from '../services/clima.service';
 import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
+import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
 
 @Component({
   selector: 'app-detalhes',
@@ -22,6 +24,7 @@ import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
     IonCardTitle, IonLabel, IonItem, IonList, IonBadge, IonSpinner,
     IonGrid, IonRow, IonCol,
     DescricaoClimaPipe, DecimalPipe, DatePipe,
+    FaixaTemperaturaDirective, DestaqueAlertaDirective,
   ],
   providers: [DecimalPipe, DatePipe],
 })
@@ -61,6 +64,7 @@ export class DetalhesPage implements OnInit {
 
   carregarClimaAtual() {
     this.carregandoAtual = true;
+    this.erroAtual = '';
     this.climaService.getClimaAtual(this.lat, this.lon).subscribe({
       next: (data) => {
         this.climaAtual = data;
@@ -77,6 +81,7 @@ export class DetalhesPage implements OnInit {
 
   carregarPrevisaoHoraria() {
     this.carregandoHorario = true;
+    this.erroHorario = '';
     this.climaService.getPrevisaoHoraria(this.lat, this.lon).subscribe({
       next: (data) => {
         this.previsaoHoraria = data;
@@ -97,14 +102,9 @@ export class DetalhesPage implements OnInit {
     });
   }
 
-  // ✅ Otimização 2: trackBy evita re-renderização do DOM no ngFor
   atualizarTodas() {
     this.climaService.limparCache();
     this.carregarClimaAtual();
     this.carregarPrevisaoHoraria();
-  }
-
-  trackByHora(index: number, i: number): number {
-    return i;
   }
 }

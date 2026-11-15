@@ -23,6 +23,8 @@ import {
 import { ClimaService, PrevisaoDiaria } from '../services/clima.service';
 import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
 import { NivelUvPipe } from '../pipes/nivel-uv.pipe';
+import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
+import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
 
 @Component({
   selector: 'app-alertas',
@@ -50,6 +52,8 @@ import { NivelUvPipe } from '../pipes/nivel-uv.pipe';
     IonSpinner,
     DescricaoClimaPipe,
     NivelUvPipe,
+    FaixaTemperaturaDirective,
+    DestaqueAlertaDirective,
     DatePipe,
     DecimalPipe,
   ],
@@ -64,6 +68,7 @@ export class AlertasPage implements OnInit {
   previsaoDiaria: PrevisaoDiaria | null = null;
   carregando = true;
   erro = '';
+  apenasAlertas = false;
 
   constructor(
     private climaService: ClimaService,
@@ -107,6 +112,11 @@ export class AlertasPage implements OnInit {
     this.carregarPrevisaoDiaria();
   }
 
+  alternarFiltroAlertas() {
+    this.apenasAlertas = !this.apenasAlertas;
+    this.cdr.markForCheck();
+  }
+
   temAlerta(i: number): boolean {
     if (!this.previsaoDiaria) return false;
     const d = this.previsaoDiaria.daily;
@@ -114,10 +124,8 @@ export class AlertasPage implements OnInit {
   }
 
   get diasIndices(): number[] {
-    return this.previsaoDiaria ? this.previsaoDiaria.daily.time.map((_, i) => i) : [];
-  }
-
-  trackByDia(index: number): number {
-    return index;
+    if (!this.previsaoDiaria) return [];
+    const todos = this.previsaoDiaria.daily.time.map((_, i) => i);
+    return this.apenasAlertas ? todos.filter((i) => this.temAlerta(i)) : todos;
   }
 }

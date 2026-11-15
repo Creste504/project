@@ -24,6 +24,8 @@ import {
 import { forkJoin } from 'rxjs';
 import { ClimaService, ClimaAtual, ResultadoGeocodificacao } from '../services/clima.service';
 import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
+import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
 
 interface CidadeSalva {
   nome: string;
@@ -61,6 +63,8 @@ interface CidadeSalva {
     IonSearchbar,
     IonNote,
     DescricaoClimaPipe,
+    FaixaTemperaturaDirective,
+    DestaqueAlertaDirective,
     DecimalPipe,
   ],
   providers: [DecimalPipe],
@@ -93,6 +97,12 @@ export class CidadesPage implements OnInit {
   }
 
   carregarTodasEmParalelo() {
+    if (this.cidades.length === 0) {
+      this.carregandoGeral = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.carregandoGeral = true;
     this.cidades.forEach((c) => {
       c.carregando = true;
@@ -201,9 +211,5 @@ export class CidadesPage implements OnInit {
   atualizarTodas() {
     this.climaService.limparCache();
     this.carregarTodasEmParalelo();
-  }
-
-  trackByCidade(index: number, cidade: CidadeSalva): string {
-    return `${cidade.nome}_${cidade.lat}_${cidade.lon}`;
   }
 }
