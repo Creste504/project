@@ -86,7 +86,7 @@
       } @else if (erroHorario) {
         <p style="color:red;">{{ erroHorario }}</p>
       } @else if (previsaoHoraria) {
-        <ion-list lines="none">
+        <ion-list>
           @for (i of horasExibidas; track i) {
             <ion-item [appDestaqueAlerta]="previsaoHoraria.hourly.precipitation_probability[i] >= 50">
               <ion-label>
