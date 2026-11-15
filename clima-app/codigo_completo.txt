@@ -1,0 +1,1961 @@
+﻿
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\alertas\alertas.page.html ===
+<ion-header [translucent]="true">
+  <ion-toolbar color="warning">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>âš ï¸ Alertas MeteorolÃ³gicos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="recarregar()">ðŸ”„</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- Controle de fluxo moderno: @if / @else -->
+  @if (carregando) {
+    <div style="text-align: center; padding: 2rem;">
+      <ion-spinner name="crescent" color="warning"></ion-spinner>
+      <p style="margin-top: 0.5rem; color: var(--ion-color-medium);">
+        Carregando previsÃ£o de 7 dias da API...
+      </p>
+    </div>
+  } @else if (erro) {
+    <ion-card color="danger">
+      <ion-card-content>
+        <p>âš ï¸ {{ erro }}</p>
+        <ion-button fill="outline" color="light" size="small" (click)="recarregar()">
+          Tentar novamente
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  } @else if (previsaoDiaria) {
+    <!-- Lista de 7 dias quando os dados chegam da API -->
+    <ion-card>
+      <ion-card-header>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <ion-card-title style="font-size: 1.2rem;">
+            ðŸ“… PrevisÃ£o 7 Dias â€” {{ cidade }}
+          </ion-card-title>
+          <ion-button
+            size="small"
+            [fill]="apenasAlertas ? 'solid' : 'outline'"
+            color="warning"
+            (click)="alternarFiltroAlertas()">
+            @if (apenasAlertas) {
+              Mostrar todos os dias
+            } @else {
+              Filtrar apenas alertas âš ï¸
+            }
+          </ion-button>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-list lines="none">
+          <!-- Diretiva estrutural moderna @for com track e @empty -->
+          @for (i of diasIndices; track i) {
+            <!-- Diretiva personalizada 2: appDestaqueAlerta -->
+            <ion-item [appDestaqueAlerta]="temAlerta(i)">
+              <ion-label class="ion-text-wrap" style="padding: 0.5rem 0;">
+                <!-- Data usando DatePipe builtin -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+                  <h2 style="font-size: 1.1rem; font-weight: bold; margin: 0;">
+                    Dia {{ i + 1 }} â€” {{ (previsaoDiaria.daily.time[i] + 'T12:00:00') | date:'dd/MM (EEEE)' }}
+                  </h2>
+
+                  @if (temAlerta(i)) {
+                    <ion-badge color="warning">âš ï¸ Alerta</ion-badge>
+                  } @else {
+                    <ion-badge color="success">ðŸŸ¢ Normal</ion-badge>
+                  }
+                </div>
+
+                <!-- Pipe personalizada 1: descricaoClima -->
+                <p style="font-size: 1rem; font-weight: 600; color: var(--ion-color-primary); margin: 0.25rem 0;">
+                  {{ previsaoDiaria.daily.weather_code[i] | descricaoClima }}
+                </p>
+
+                <!-- Diretiva personalizada 1: appFaixaTemperatura + DecimalPipe -->
+                <p
+                  style="margin: 0.35rem 0;"
+                  [appFaixaTemperatura]="previsaoDiaria.daily.temperature_2m_max[i]">
+                  ðŸŒ¡ï¸ <strong>MÃ¡x:</strong> {{ previsaoDiaria.daily.temperature_2m_max[i] | number:'1.1-1' }}Â°C
+                  &nbsp;|&nbsp;
+                  <strong>MÃ­n:</strong> {{ previsaoDiaria.daily.temperature_2m_min[i] | number:'1.1-1' }}Â°C
+                </p>
+
+                <!-- PrecipitaÃ§Ã£o e vento com DecimalPipe -->
+                <p style="margin: 0.25rem 0;">
+                  ðŸŒ§ï¸ <strong>Chuva:</strong> {{ previsaoDiaria.daily.precipitation_sum[i] | number:'1.1-1' }} mm
+                  &nbsp;|&nbsp;
+                  ðŸ’¨ <strong>Vento MÃ¡x:</strong> {{ previsaoDiaria.daily.wind_speed_10m_max[i] | number:'1.0-0' }} km/h
+                </p>
+
+                <!-- Pipe personalizada 2: nivelUv -->
+                <p style="margin: 0.25rem 0;">
+                  ðŸ”† <strong>Ãndice UV:</strong> {{ previsaoDiaria.daily.uv_index_max[i] | nivelUv }}
+                </p>
+
+                <!-- Pipe builtin 2: DatePipe para nascer e pÃ´r do sol -->
+                <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--ion-color-medium);">
+                  ðŸŒ… Nascer do Sol: {{ previsaoDiaria.daily.sunrise[i] | date:'HH:mm' }}
+                  &nbsp;â€¢&nbsp;
+                  ðŸŒ‡ PÃ´r do Sol: {{ previsaoDiaria.daily.sunset[i] | date:'HH:mm' }}
+                </p>
+              </ion-label>
+            </ion-item>
+          } @empty {
+            <div style="text-align: center; padding: 1.5rem; color: var(--ion-color-medium);">
+              ðŸŽ‰ Nenhum alerta meteorolÃ³gico encontrado para os prÃ³ximos dias!
+            </div>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Legenda de CritÃ©rios de Alerta -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title style="font-size: 1.05rem;">â„¹ï¸ CritÃ©rios de Alerta MeteorolÃ³gico</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Um dia recebe o selo <strong>âš ï¸ Alerta</strong> caso ocorra qualquer uma das condiÃ§Ãµes:</p>
+        <ul>
+          <li>Chuva prevista acumulada &gt; 5 mm</li>
+          <li>Ãndice UV mÃ¡ximo &gt; 7 (Muito Alto / Extremo)</li>
+          <li>CÃ³digo meteorolÃ³gico severo (tempestades ou pancadas fortes)</li>
+        </ul>
+      </ion-card-content>
+    </ion-card>
+  }
+
+</ion-content>
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\alertas\alertas.page.scss ===
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\alertas\alertas.page.ts ===
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonBackButton,
+  IonButtons,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonLabel,
+  IonItem,
+  IonList,
+  IonBadge,
+  IonSpinner,
+  IonButton,
+} from '@ionic/angular';
+import { ClimaService, PrevisaoDiaria } from '../services/clima.service';
+import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { NivelUvPipe } from '../pipes/nivel-uv.pipe';
+import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
+import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
+
+@Component({
+  selector: 'app-alertas',
+  templateUrl: './alertas.page.html',
+  styleUrls: ['./alertas.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    CommonModule,
+    FormsModule,
+    IonButtons,
+    IonBackButton,
+    IonButton,
+    IonCard,
+    IonCardContent,
+    IonCardHeader,
+    IonCardTitle,
+    IonLabel,
+    IonItem,
+    IonList,
+    IonBadge,
+    IonSpinner,
+    DescricaoClimaPipe,
+    NivelUvPipe,
+    FaixaTemperaturaDirective,
+    DestaqueAlertaDirective,
+    DatePipe,
+    DecimalPipe,
+  ],
+  providers: [DatePipe, DecimalPipe],
+})
+export class AlertasPage implements OnInit {
+  // Coordenadas padrÃ£o: Recife, PE
+  lat = -8.0543;
+  lon = -34.8813;
+  cidade = 'Recife, PE';
+
+  previsaoDiaria: PrevisaoDiaria | null = null;
+  carregando = true;
+  erro = '';
+  apenasAlertas = false;
+
+  constructor(
+    private climaService: ClimaService,
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      if (params['lat'] && params['lon']) {
+        this.lat = parseFloat(params['lat']);
+        this.lon = parseFloat(params['lon']);
+        if (params['cidade']) {
+          this.cidade = params['cidade'];
+        }
+      }
+      this.carregarPrevisaoDiaria();
+    });
+  }
+
+  carregarPrevisaoDiaria() {
+    this.carregando = true;
+    this.erro = '';
+    this.climaService.getPrevisaoDiaria(this.lat, this.lon).subscribe({
+      next: (data) => {
+        this.previsaoDiaria = data;
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Erro ao buscar previsÃ£o diÃ¡ria:', err);
+        this.erro = 'Falha ao carregar previsÃ£o diÃ¡ria da API.';
+        this.carregando = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  recarregar() {
+    this.climaService.limparCache();
+    this.carregarPrevisaoDiaria();
+  }
+
+  alternarFiltroAlertas() {
+    this.apenasAlertas = !this.apenasAlertas;
+    this.cdr.markForCheck();
+  }
+
+  temAlerta(i: number): boolean {
+    if (!this.previsaoDiaria) return false;
+    const d = this.previsaoDiaria.daily;
+    return d.precipitation_sum[i] > 5 || d.uv_index_max[i] > 7 || d.weather_code[i] >= 80;
+  }
+
+  get diasIndices(): number[] {
+    if (!this.previsaoDiaria) return [];
+    const todos = this.previsaoDiaria.daily.time.map((_, i) => i);
+    return this.apenasAlertas ? todos.filter((i) => this.temAlerta(i)) : todos;
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\cidades\cidades.page.html ===
+<ion-header [translucent]="true">
+  <ion-toolbar color="secondary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>ðŸ™ï¸ Cidades Salvas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="atualizarTodas()">ðŸ”„</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- ðŸ” Card de Busca para Adicionar Nova Cidade -->
+  <ion-card style="margin: 0 0 1rem 0;">
+    <ion-card-header>
+      <ion-card-title style="font-size: 1.05rem;">âž• Buscar e Adicionar Cidade</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-searchbar
+        [value]="termoBusca"
+        (ionInput)="onPesquisar($event)"
+        (ionClear)="limparBusca()"
+        placeholder="Digite o nome da cidade..."
+        debounce="400"
+        animated="true"
+      ></ion-searchbar>
+
+      @if (buscando) {
+        <div style="text-align: center; padding: 0.5rem;">
+          <ion-spinner name="crescent" color="secondary"></ion-spinner>
+          <p style="font-size: 0.85rem; color: var(--ion-color-medium); margin: 0.25rem 0 0;">
+            Buscando na API...
+          </p>
+        </div>
+      } @else if (nenhumResultado) {
+        <p style="color: var(--ion-color-medium); text-align: center; margin: 0.5rem 0;">
+          Nenhuma cidade encontrada.
+        </p>
+      } @else if (sugestoes.length > 0) {
+        <ion-list>
+          @for (s of sugestoes; track s.id) {
+            <ion-item button (click)="adicionarCidade(s)">
+              <ion-label>
+                <h3><strong>{{ s.name }}</strong></h3>
+                <p>{{ s.admin1 ? s.admin1 + ', ' : '' }}{{ s.country }}</p>
+                <ion-note style="font-size: 0.75rem;">
+                  Lat: {{ s.latitude | number:'1.2-2' }}, Lon: {{ s.longitude | number:'1.2-2' }}
+                </ion-note>
+              </ion-label>
+              <ion-badge slot="end" color="success">Adicionar +</ion-badge>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Controle de fluxo moderno: @if / @else + @for com track e @empty -->
+  @if (carregandoGeral) {
+    <div style="text-align:center; padding: 2rem;">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Carregando cidades salvas...</p>
+    </div>
+  } @else {
+    @for (cidade of cidades; track cidade.nome + '_' + cidade.lat + '_' + cidade.lon; let idx = $index) {
+      <ion-card [appDestaqueAlerta]="(cidade.clima?.current?.precipitation ?? 0) > 0">
+        <ion-card-header style="display: flex; justify-content: space-between; align-items: center;">
+          <ion-card-title style="font-size: 1.15rem;">{{ cidade.nome }}</ion-card-title>
+          <ion-button fill="clear" color="danger" size="small" (click)="removerCidade(idx)" title="Remover">
+            ðŸ—‘ï¸
+          </ion-button>
+        </ion-card-header>
+        <ion-card-content>
+
+          @if (cidade.carregando) {
+            <div style="text-align:center; padding: 0.5rem;">
+              <ion-spinner name="dots"></ion-spinner>
+            </div>
+          } @else if (cidade.erro) {
+            <p style="color:red;">{{ cidade.erro }}</p>
+          } @else if (cidade.clima) {
+            <p style="font-size: 1rem; font-weight: 500;">
+              {{ cidade.clima.current.weather_code | descricaoClima }}
+            </p>
+            <ion-list lines="none">
+              <ion-item>
+                <ion-label>
+                  <span [appFaixaTemperatura]="cidade.clima.current.temperature_2m">
+                    ðŸŒ¡ï¸ <strong>{{ cidade.clima.current.temperature_2m | number:'1.1-1' }}Â°C</strong>
+                    (sensaÃ§Ã£o {{ cidade.clima.current.apparent_temperature | number:'1.1-1' }}Â°C)
+                  </span>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  ðŸ’§ {{ cidade.clima.current.relative_humidity_2m }}%
+                  &nbsp;|&nbsp;
+                  ðŸ’¨ {{ cidade.clima.current.wind_speed_10m | number:'1.0-0' }} km/h
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>ðŸŒ§ï¸ PrecipitaÃ§Ã£o: {{ cidade.clima.current.precipitation }} mm</ion-label>
+                @if (cidade.clima.current.is_day) {
+                  <ion-badge slot="end" color="warning">â˜€ï¸ Dia</ion-badge>
+                } @else {
+                  <ion-badge slot="end" color="dark">ðŸŒ™ Noite</ion-badge>
+                }
+              </ion-item>
+            </ion-list>
+          }
+
+        </ion-card-content>
+      </ion-card>
+    } @empty {
+      <ion-card>
+        <ion-card-content style="text-align: center; padding: 1.5rem; color: var(--ion-color-medium);">
+          ðŸ™ï¸ Nenhuma cidade salva no momento. Utilize a busca acima para adicionar cidades!
+        </ion-card-content>
+      </ion-card>
+    }
+  }
+
+</ion-content>
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\cidades\cidades.page.scss ===
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\cidades\cidades.page.ts ===
+import { CommonModule, DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonBackButton,
+  IonButtons,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonLabel,
+  IonItem,
+  IonList,
+  IonBadge,
+  IonSpinner,
+  IonButton,
+  IonSearchbar,
+  IonNote,
+} from '@ionic/angular';
+import { forkJoin } from 'rxjs';
+import { ClimaService, ClimaAtual, ResultadoGeocodificacao } from '../services/clima.service';
+import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
+import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
+
+interface CidadeSalva {
+  nome: string;
+  lat: number;
+  lon: number;
+  clima?: ClimaAtual;
+  carregando?: boolean;
+  erro?: string;
+}
+
+@Component({
+  selector: 'app-cidades',
+  templateUrl: './cidades.page.html',
+  styleUrls: ['./cidades.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    CommonModule,
+    FormsModule,
+    IonButtons,
+    IonBackButton,
+    IonCard,
+    IonCardContent,
+    IonCardHeader,
+    IonCardTitle,
+    IonLabel,
+    IonItem,
+    IonList,
+    IonBadge,
+    IonSpinner,
+    IonButton,
+    IonSearchbar,
+    IonNote,
+    DescricaoClimaPipe,
+    FaixaTemperaturaDirective,
+    DestaqueAlertaDirective,
+    DecimalPipe,
+  ],
+  providers: [DecimalPipe],
+})
+export class CidadesPage implements OnInit {
+  cidades: CidadeSalva[] = [
+    { nome: 'Recife, PE', lat: -8.0543, lon: -34.8813 },
+    { nome: 'SÃ£o Paulo, SP', lat: -23.5505, lon: -46.6333 },
+    { nome: 'Rio de Janeiro, RJ', lat: -22.9068, lon: -43.1729 },
+    { nome: 'Curitiba, PR', lat: -25.4284, lon: -49.2733 },
+    { nome: 'Fortaleza, CE', lat: -3.7172, lon: -38.5433 },
+    { nome: 'Manaus, AM', lat: -3.1019, lon: -60.025 },
+  ];
+
+  carregandoGeral = true;
+
+  // Busca e adiÃ§Ã£o de novas cidades
+  termoBusca = '';
+  buscando = false;
+  sugestoes: ResultadoGeocodificacao[] = [];
+  nenhumResultado = false;
+
+  constructor(
+    private climaService: ClimaService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.carregarTodasEmParalelo();
+  }
+
+  carregarTodasEmParalelo() {
+    if (this.cidades.length === 0) {
+      this.carregandoGeral = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.carregandoGeral = true;
+    this.cidades.forEach((c) => {
+      c.carregando = true;
+      c.erro = '';
+    });
+
+    const requisicoes = this.cidades.map((c) =>
+      this.climaService.getClimaAtual(c.lat, c.lon)
+    );
+
+    forkJoin(requisicoes).subscribe({
+      next: (resultados) => {
+        resultados.forEach((data, i) => {
+          this.cidades[i].clima = data;
+          this.cidades[i].carregando = false;
+        });
+        this.carregandoGeral = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cidades.forEach((c) => {
+          c.erro = 'Erro ao carregar';
+          c.carregando = false;
+        });
+        this.carregandoGeral = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  // ðŸ” Pesquisa de cidades via API Geocoding
+  onPesquisar(event: any) {
+    const valor = event.target?.value?.trim() || '';
+    this.termoBusca = valor;
+    if (valor.length < 2) {
+      this.sugestoes = [];
+      this.nenhumResultado = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.buscando = true;
+    this.nenhumResultado = false;
+    this.cdr.markForCheck();
+
+    this.climaService.buscarCidades(valor).subscribe({
+      next: (res) => {
+        this.buscando = false;
+        this.sugestoes = res.results || [];
+        this.nenhumResultado = this.sugestoes.length === 0;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error(err);
+        this.buscando = false;
+        this.sugestoes = [];
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  // âž• Adiciona a cidade pesquisada Ã  lista e busca o clima
+  adicionarCidade(resultado: ResultadoGeocodificacao) {
+    const nome = [resultado.name, resultado.admin1, resultado.country]
+      .filter(Boolean)
+      .join(', ');
+
+    const novaCidade: CidadeSalva = {
+      nome,
+      lat: resultado.latitude,
+      lon: resultado.longitude,
+      carregando: true,
+    };
+
+    this.cidades.unshift(novaCidade);
+    this.termoBusca = '';
+    this.sugestoes = [];
+    this.cdr.markForCheck();
+
+    this.climaService.getClimaAtual(novaCidade.lat, novaCidade.lon).subscribe({
+      next: (clima) => {
+        novaCidade.clima = clima;
+        novaCidade.carregando = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        novaCidade.erro = 'Erro ao consultar clima';
+        novaCidade.carregando = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  removerCidade(index: number) {
+    this.cidades.splice(index, 1);
+    this.cdr.markForCheck();
+  }
+
+  limparBusca() {
+    this.termoBusca = '';
+    this.sugestoes = [];
+    this.nenhumResultado = false;
+    this.cdr.markForCheck();
+  }
+
+  atualizarTodas() {
+    this.climaService.limparCache();
+    this.carregarTodasEmParalelo();
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\configuracoes\configuracoes.page.html ===
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>âš™ï¸ ConfiguraÃ§Ãµes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>PreferÃªncias de ExibiÃ§Ã£o</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+
+        <ion-item>
+          <ion-label>Unidade de Temperatura</ion-label>
+          <ion-select [(ngModel)]="unidadeTemperatura" placeholder="Selecionar">
+            <ion-select-option value="celsius">Celsius (Â°C)</ion-select-option>
+            <ion-select-option value="fahrenheit">Fahrenheit (Â°F)</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Idioma</ion-label>
+          <ion-select [(ngModel)]="idiomaApp" placeholder="Selecionar">
+            <ion-select-option value="pt-BR">PortuguÃªs (BR)</ion-select-option>
+            <ion-select-option value="en-US">English (US)</ion-select-option>
+            <ion-select-option value="es">EspaÃ±ol</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Tema Escuro</ion-label>
+          <ion-toggle [(ngModel)]="temaEscuro" slot="end"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>NotificaÃ§Ãµes de Alertas</ion-label>
+          <ion-toggle [(ngModel)]="notificacoesAtivadas" slot="end"></ion-toggle>
+        </ion-item>
+
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Sobre o App</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>ðŸŒ <strong>Clima App</strong> v1.0.0</p>
+      <p>Dados fornecidos pela <strong>Open-Meteo API</strong> (open-meteo.com)</p>
+      <p>âœ… Gratuita, sem chave de API, dados em tempo real.</p>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\configuracoes\configuracoes.page.scss ===
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\configuracoes\configuracoes.page.ts ===
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonBackButton,
+  IonButtons,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonToggle,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/angular';
+
+@Component({
+  selector: 'app-configuracoes',
+  templateUrl: './configuracoes.page.html',
+  styleUrls: ['./configuracoes.page.scss'],
+  imports: [
+    IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,
+    IonButtons, IonBackButton, IonCard, IonCardContent, IonCardHeader,
+    IonCardTitle, IonList, IonItem, IonLabel, IonToggle, IonSelect, IonSelectOption,
+  ],
+})
+export class ConfiguracoesPage {
+  unidadeTemperatura = 'celsius';
+  notificacoesAtivadas = true;
+  temaEscuro = false;
+  idiomaApp = 'pt-BR';
+
+  constructor() {}
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\detalhes\detalhes.page.html ===
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
+    </ion-buttons>
+    <ion-title>â±ï¸ PrÃ³ximas Horas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="atualizarTodas()">ðŸ”„</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <!-- â”€â”€ Clima Atual â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Clima Atual â€” {{ cidade }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+
+      @if (carregandoAtual) {
+        <div style="text-align:center; padding: 1rem;">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Carregando...</p>
+        </div>
+      } @else if (erroAtual) {
+        <p style="color:red;">{{ erroAtual }}</p>
+      } @else if (climaAtual) {
+        <h2 style="font-size: 1.3rem; font-weight: bold;">
+          {{ climaAtual.current.weather_code | descricaoClima }}
+        </h2>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <p>ðŸŒ¡ï¸ <strong>Temperatura</strong></p>
+              <p [appFaixaTemperatura]="climaAtual.current.temperature_2m">
+                {{ climaAtual.current.temperature_2m | number:'1.1-1' }}{{ climaAtual.current_units.temperature_2m }}
+              </p>
+            </ion-col>
+            <ion-col size="6">
+              <p>ðŸ¤” <strong>SensaÃ§Ã£o</strong></p>
+              <p [appFaixaTemperatura]="climaAtual.current.apparent_temperature">
+                {{ climaAtual.current.apparent_temperature | number:'1.1-1' }}{{ climaAtual.current_units.apparent_temperature }}
+              </p>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6">
+              <p>ðŸ’§ <strong>Umidade</strong></p>
+              <p>{{ climaAtual.current.relative_humidity_2m }}%</p>
+            </ion-col>
+            <ion-col size="6">
+              <p>ðŸ’¨ <strong>Vento</strong></p>
+              <p>{{ climaAtual.current.wind_speed_10m | number:'1.0-1' }} {{ climaAtual.current_units.wind_speed_10m }}</p>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6">
+              <p>ðŸŒ§ï¸ <strong>PrecipitaÃ§Ã£o</strong></p>
+              <p>{{ climaAtual.current.precipitation }} {{ climaAtual.current_units.precipitation }}</p>
+            </ion-col>
+            <ion-col size="6">
+              <p>â° <strong>Atualizado</strong></p>
+              <p>{{ climaAtual.current.time | date:'HH:mm' }}</p>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      }
+
+    </ion-card-content>
+  </ion-card>
+
+  <!-- â”€â”€ PrevisÃ£o HorÃ¡ria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>â±ï¸ PrÃ³ximas Horas</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+
+      @if (carregandoHorario) {
+        <div style="text-align:center; padding: 1rem;">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Carregando previsÃ£o...</p>
+        </div>
+      } @else if (erroHorario) {
+        <p style="color:red;">{{ erroHorario }}</p>
+      } @else if (previsaoHoraria) {
+        <ion-list>
+          @for (i of horasExibidas; track i) {
+            <ion-item [appDestaqueAlerta]="previsaoHoraria.hourly.precipitation_probability[i] >= 50">
+              <ion-label>
+                <h3>{{ previsaoHoraria.hourly.time[i] | date:'HH:mm' }}</h3>
+                <p>{{ previsaoHoraria.hourly.weather_code[i] | descricaoClima }}</p>
+                <p>
+                  <span [appFaixaTemperatura]="previsaoHoraria.hourly.temperature_2m[i]">
+                    ðŸŒ¡ï¸ {{ previsaoHoraria.hourly.temperature_2m[i] | number:'1.1-1' }}Â°C
+                  </span>
+                  &nbsp;|&nbsp;
+                  ðŸ’§ {{ previsaoHoraria.hourly.relative_humidity_2m[i] }}%
+                  &nbsp;|&nbsp;
+                  ðŸŒ§ï¸ {{ previsaoHoraria.hourly.precipitation_probability[i] }}%
+                </p>
+              </ion-label>
+              <ion-badge slot="end" color="primary">
+                {{ previsaoHoraria.hourly.wind_speed_10m[i] | number:'1.0-0' }} km/h
+              </ion-badge>
+            </ion-item>
+          } @empty {
+            <div style="text-align: center; padding: 1rem; color: var(--ion-color-medium);">
+              Nenhum horÃ¡rio disponÃ­vel para exibiÃ§Ã£o.
+            </div>
+          }
+        </ion-list>
+      }
+
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\detalhes\detalhes.page.scss ===
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\detalhes\detalhes.page.ts ===
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import {
+  IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons,
+  IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonLabel, IonItem,
+  IonList, IonBadge, IonSpinner, IonGrid, IonRow, IonCol, IonButton,
+} from '@ionic/angular';
+import { ClimaService, ClimaAtual, PrevisaoHoraria } from '../services/clima.service';
+import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
+import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
+
+@Component({
+  selector: 'app-detalhes',
+  templateUrl: './detalhes.page.html',
+  styleUrls: ['./detalhes.page.scss'],
+  // âœ… OtimizaÃ§Ã£o 1: OnPush â€” sÃ³ re-renderiza quando Input/evento mudar
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,
+    IonButtons, IonBackButton, IonButton, IonCard, IonCardContent, IonCardHeader,
+    IonCardTitle, IonLabel, IonItem, IonList, IonBadge, IonSpinner,
+    IonGrid, IonRow, IonCol,
+    DescricaoClimaPipe, DecimalPipe, DatePipe,
+    FaixaTemperaturaDirective, DestaqueAlertaDirective,
+  ],
+  providers: [DecimalPipe, DatePipe],
+})
+export class DetalhesPage implements OnInit {
+  // Coordenadas padrÃ£o: Recife, PE
+  lat = -8.0543;
+  lon = -34.8813;
+  cidade = 'Recife, PE';
+
+  climaAtual: ClimaAtual | null = null;
+  previsaoHoraria: PrevisaoHoraria | null = null;
+  carregandoAtual = true;
+  carregandoHorario = true;
+  erroAtual = '';
+  erroHorario = '';
+  horasExibidas: number[] = [];
+
+  constructor(
+    private climaService: ClimaService,
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      if (params['lat'] && params['lon']) {
+        this.lat = parseFloat(params['lat']);
+        this.lon = parseFloat(params['lon']);
+        if (params['cidade']) {
+          this.cidade = params['cidade'];
+        }
+      }
+      this.carregarClimaAtual();
+      this.carregarPrevisaoHoraria();
+    });
+  }
+
+  carregarClimaAtual() {
+    this.carregandoAtual = true;
+    this.erroAtual = '';
+    this.climaService.getClimaAtual(this.lat, this.lon).subscribe({
+      next: (data) => {
+        this.climaAtual = data;
+        this.carregandoAtual = false;
+        this.cdr.markForCheck(); // âœ… notifica OnPush
+      },
+      error: () => {
+        this.erroAtual = 'Falha ao carregar clima atual.';
+        this.carregandoAtual = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  carregarPrevisaoHoraria() {
+    this.carregandoHorario = true;
+    this.erroHorario = '';
+    this.climaService.getPrevisaoHoraria(this.lat, this.lon).subscribe({
+      next: (data) => {
+        this.previsaoHoraria = data;
+        const agora = new Date();
+        this.horasExibidas = data.hourly.time
+          .map((t, i) => ({ time: new Date(t), i }))
+          .filter((x) => x.time >= agora)
+          .slice(0, 8)
+          .map((x) => x.i);
+        this.carregandoHorario = false;
+        this.cdr.markForCheck(); // âœ… notifica OnPush
+      },
+      error: () => {
+        this.erroHorario = 'Falha ao carregar previsÃ£o horÃ¡ria.';
+        this.carregandoHorario = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  atualizarTodas() {
+    this.climaService.limparCache();
+    this.carregarClimaAtual();
+    this.carregarPrevisaoHoraria();
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\directives\destaque-alerta.directive.ts ===
+import {
+  Directive,
+  ElementRef,
+  HostListener,
+  Input,
+  OnChanges,
+  OnInit,
+  Renderer2,
+  SimpleChanges,
+} from '@angular/core';
+
+/**
+ * Diretiva PERSONALIZADA 2 â€” appDestaqueAlerta
+ * Estiliza visualmente itens/cards conforme o estado de alerta meteorolÃ³gico
+ * e adiciona interatividade visual (efeito de elevaÃ§Ã£o e realce ao passar o mouse).
+ *
+ * Uso: <ion-item [appDestaqueAlerta]="temAlerta(i)">...</ion-item>
+ */
+@Directive({
+  selector: '[appDestaqueAlerta]',
+  standalone: true,
+})
+export class DestaqueAlertaDirective implements OnInit, OnChanges {
+  @Input('appDestaqueAlerta') emAlerta = false;
+
+  constructor(
+    private el: ElementRef<HTMLElement>,
+    private renderer: Renderer2
+  ) {}
+
+  ngOnInit(): void {
+    this.configurarTransicaoBase();
+    this.atualizarEstiloAlerta();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('emAlerta' in changes) {
+      this.atualizarEstiloAlerta();
+    }
+  }
+
+  private configurarTransicaoBase(): void {
+    const elemento = this.el.nativeElement;
+    this.renderer.setStyle(
+      elemento,
+      'transition',
+      'transform 0.2s ease, box-shadow 0.2s ease, border-left 0.2s ease'
+    );
+  }
+
+  private atualizarEstiloAlerta(): void {
+    const elemento = this.el.nativeElement;
+
+    if (this.emAlerta) {
+      this.renderer.setStyle(elemento, 'border-left', '4px solid var(--ion-color-warning, #ffc409)');
+    } else {
+      this.renderer.setStyle(elemento, 'border-left', '4px solid var(--ion-color-success, #2dd36f)');
+    }
+  }
+
+  @HostListener('mouseenter')
+  onMouseEnter(): void {
+    const elemento = this.el.nativeElement;
+    this.renderer.setStyle(elemento, 'transform', 'translateY(-2px)');
+    this.renderer.setStyle(
+      elemento,
+      'box-shadow',
+      this.emAlerta
+        ? '0 4px 12px rgba(255, 196, 9, 0.25)'
+        : '0 4px 12px rgba(0, 0, 0, 0.12)'
+    );
+  }
+
+  @HostListener('mouseleave')
+  onMouseLeave(): void {
+    const elemento = this.el.nativeElement;
+    this.renderer.removeStyle(elemento, 'transform');
+    this.renderer.removeStyle(elemento, 'box-shadow');
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\directives\faixa-temperatura.directive.ts ===
+import {
+  Directive,
+  ElementRef,
+  Input,
+  OnChanges,
+  Renderer2,
+  SimpleChanges,
+} from '@angular/core';
+
+/**
+ * Diretiva PERSONALIZADA 1 â€” appFaixaTemperatura
+ * Aplica estilizaÃ§Ã£o dinÃ¢mica (borda lateral colorida e fundo suave adaptÃ¡vel a tema claro/escuro)
+ * de acordo com a faixa de temperatura em graus Celsius.
+ *
+ * Uso: <p [appFaixaTemperatura]="temperatura">...</p>
+ */
+@Directive({
+  selector: '[appFaixaTemperatura]',
+  standalone: true,
+})
+export class FaixaTemperaturaDirective implements OnChanges {
+  @Input('appFaixaTemperatura') temperatura: number | null | undefined;
+
+  constructor(
+    private el: ElementRef<HTMLElement>,
+    private renderer: Renderer2
+  ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('temperatura' in changes) {
+      this.aplicarEstilo();
+    }
+  }
+
+  private aplicarEstilo(): void {
+    const elemento = this.el.nativeElement;
+
+    this.renderer.setStyle(elemento, 'padding', '0.35rem 0.6rem');
+    this.renderer.setStyle(elemento, 'border-radius', '6px');
+    this.renderer.setStyle(elemento, 'transition', 'background-color 0.25s ease, border-color 0.25s ease');
+
+    if (this.temperatura == null || Number.isNaN(this.temperatura)) {
+      this.renderer.removeStyle(elemento, 'border-left');
+      this.renderer.removeStyle(elemento, 'background-color');
+      return;
+    }
+
+    if (this.temperatura < 16) {
+      // Frio â€” azul
+      this.renderer.setStyle(elemento, 'border-left', '4px solid var(--ion-color-primary, #3880ff)');
+      this.renderer.setStyle(elemento, 'background-color', 'rgba(56, 128, 255, 0.14)');
+    } else if (this.temperatura <= 26) {
+      // AgradÃ¡vel / Ameno â€” verde
+      this.renderer.setStyle(elemento, 'border-left', '4px solid var(--ion-color-success, #2dd36f)');
+      this.renderer.setStyle(elemento, 'background-color', 'rgba(45, 211, 111, 0.14)');
+    } else if (this.temperatura <= 31) {
+      // Quente â€” laranja/amarelo
+      this.renderer.setStyle(elemento, 'border-left', '4px solid var(--ion-color-warning, #ffc409)');
+      this.renderer.setStyle(elemento, 'background-color', 'rgba(255, 196, 9, 0.16)');
+    } else {
+      // Muito quente â€” vermelho
+      this.renderer.setStyle(elemento, 'border-left', '4px solid var(--ion-color-danger, #eb445a)');
+      this.renderer.setStyle(elemento, 'background-color', 'rgba(235, 68, 90, 0.16)');
+    }
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\home\home.page.html ===
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>ðŸŒ¦ï¸ PrevisÃ£o do Tempo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- ðŸ” SeÃ§Ã£o de Pesquisa de Cidade com consulta Ã  API -->
+  <ion-card style="margin: 0 0 1.5rem 0;">
+    <ion-card-header>
+      <ion-card-title style="font-size: 1.15rem;">ðŸ” Pesquisar Cidade</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-searchbar
+        [value]="termoBusca"
+        (ionInput)="onInputBusca($event)"
+        (ionClear)="limparBusca()"
+        placeholder="Ex: Rio de Janeiro, Tokyo, Madrid..."
+        debounce="0"
+        animated="true"
+      ></ion-searchbar>
+      
+<!-- HistÃ³rico de Pesquisas -->
+<ion-card style="margin: 0 0 1.5rem 0;">
+
+  <ion-card-header>
+    <ion-card-title style="font-size: 1.15rem;">
+      HistÃ³rico de Pesquisas
+    </ion-card-title>
+  </ion-card-header>
+
+  <ion-card-content>
+
+    <!-- Mensagem quando nÃ£o houver cidades -->
+    @if (historicoCidades.length === 0) {
+      <div
+        style="text-align: center; padding: 1rem; color: var(--ion-color-medium);">
+        Nenhuma cidade pesquisada ainda.
+      </div>
+    }
+
+    <!-- Lista de cidades pesquisadas -->
+    @if (historicoCidades.length > 0) {
+      <ion-list>
+
+        @for (cidade of historicoCidades; track cidade) {
+          <ion-item>
+
+            <ion-label>
+              <h3>{{ cidade }}</h3>
+            </ion-label>
+
+            <!-- BotÃ£o para excluir uma cidade -->
+            <ion-button
+              slot="end"
+              fill="clear"
+              color="danger"
+              size="small"
+              (click)="removerCidade(cidade)">
+              Excluir
+            </ion-button>
+
+          </ion-item>
+        }
+
+      </ion-list>
+
+      <!-- BotÃ£o para limpar todo o histÃ³rico -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="danger"
+        (click)="limparHistorico()">
+        Limpar histÃ³rico
+      </ion-button>
+    }
+
+  </ion-card-content>
+
+</ion-card>
+
+<!-- Indicador de carregamento da API -->
+@if (buscando) {
+  <div style="text-align: center; padding: 0.75rem;">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--ion-color-medium);">
+      Consultando Open-Meteo Geocoding API...
+    </p>
+  </div>
+}
+
+<!-- Nenhum resultado encontrado -->
+@if (nenhumResultado && !buscando) {
+  <p style="color: var(--ion-color-medium); text-align: center; padding: 0.5rem 0;">
+    Nenhuma cidade encontrada para "{{ termoBusca }}".
+  </p>
+}
+
+<!-- Lista de resultados retornados pela API -->
+@if (resultadosBusca.length > 0) {
+  <ion-list>
+    @for (cidade of resultadosBusca; track cidade.id) {
+      <ion-item
+        button
+        detail="true"
+        (click)="selecionarCidade(cidade)"
+      >
+        <ion-label>
+          <h3><strong>{{ cidade.name }}</strong></h3>
+          <p>{{ cidade.admin1 ? cidade.admin1 + ' - ' : '' }}{{ cidade.country }}</p>
+          <ion-note style="font-size: 0.75rem;">
+            Lat: {{ cidade.latitude | number:'1.2-2' }}, Lon: {{ cidade.longitude | number:'1.2-2' }}
+          </ion-note>
+        </ion-label>
+        <ion-badge slot="end" color="primary">Ver clima</ion-badge>
+      </ion-item>
+    }
+  </ion-list>
+}
+
+</ion-card-content>
+</ion-card>
+
+<!-- Menu Principal -->
+<h2 style="margin: 0 0 1rem; font-size: 1.25rem; font-weight: bold;">Menu Principal</h2>
+
+<ion-button routerLink="/detalhes" expand="block" size="large" style="margin-bottom: 0.75rem;">
+  Ver Detalhes do Clima
+</ion-button>
+
+<ion-button routerLink="/cidades" expand="block" color="secondary" size="large" style="margin-bottom: 0.75rem;">
+  Cidades Salvas
+</ion-button>
+
+<ion-button routerLink="/alertas" expand="block" color="warning" size="large" style="margin-bottom: 0.75rem;">
+  Alertas MeteorolÃ³gicos
+</ion-button>
+
+<ion-button routerLink="/configuracoes" expand="block" color="medium" size="large">
+  ConfiguraÃ§Ãµes
+</ion-button>
+
+</ion-content>
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\home\home.page.scss ===
+#container {
+  text-align: center;
+
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#container strong {
+  font-size: 20px;
+  line-height: 26px;
+}
+
+#container p {
+  font-size: 16px;
+  line-height: 22px;
+
+  color: #8c8c8c;
+
+  margin: 0;
+}
+
+#container a {
+  text-decoration: none;
+}
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\home\home.page.ts ===
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import {
+  IonButton,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonSearchbar,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonSpinner,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonNote,
+  IonBadge,
+} from '@ionic/angular';
+import { Subject, Subscription, EMPTY } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
+import { ClimaService, ResultadoGeocodificacao } from '../services/clima.service';
+import { HistoricoService } from '../services/historico';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
+  standalone: true,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    IonButton,
+    IonSearchbar,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonSpinner,
+    IonCard,
+    IonCardContent,
+    IonCardHeader,
+    IonCardTitle,
+    IonNote,
+    IonBadge,
+  ],
+})
+export class HomePage implements OnInit, OnDestroy {
+  termoBusca = '';
+  historicoCidades: string[] = [];
+  resultadosBusca: ResultadoGeocodificacao[] = [];
+  buscando = false;
+  nenhumResultado = false;
+
+  private buscaSubject = new Subject<string>();
+  private subBusca?: Subscription;
+
+  constructor(
+    private climaService: ClimaService,
+    private router: Router,
+    private historicoService : HistoricoService
+  ) {}
+
+  ngOnInit() {
+    this.historicoCidades = this.historicoService.obterHistorico();
+
+    this.subBusca = this.buscaSubject
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        switchMap((termo) => {
+          if (!termo || termo.trim().length < 2) {
+            this.buscando = false;
+            this.resultadosBusca = [];
+            this.nenhumResultado = false;
+            return EMPTY;;
+          }
+          this.buscando = true;
+          this.nenhumResultado = false;
+          return this.climaService.buscarCidades(termo.trim());
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          this.buscando = false;
+          this.resultadosBusca = res.results || [];
+          this.nenhumResultado = this.resultadosBusca.length === 0 && this.termoBusca.trim().length >= 2;
+        },
+        error: (err) => {
+          console.error('Erro ao buscar cidades:', err);
+          this.buscando = false;
+          this.resultadosBusca = [];
+        },
+      });
+  }
+
+  ngOnDestroy() {
+    this.subBusca?.unsubscribe();
+  }
+
+  onInputBusca(event: any) {
+    const valor = event.target?.value || '';
+    this.termoBusca = valor;
+    this.buscaSubject.next(valor);
+  }
+
+  selecionarCidade(cidade: ResultadoGeocodificacao) {
+    const nomeCompleto = [cidade.name, cidade.admin1, cidade.country]
+      .filter(Boolean)
+      .join(', ');
+
+      //Salvar a cidade no histÃ³rico
+    this.historicoService.adicionarCidade(nomeCompleto);
+      // Atualizar o histÃ³rico na tela
+    this.historicoCidades = this.historicoService.obterHistorico();
+
+    this.router.navigate(['/detalhes'], {
+      queryParams: {
+        lat: cidade.latitude,
+        lon: cidade.longitude,
+        cidade: nomeCompleto,
+      },
+    });
+  }
+
+  limparBusca() {
+    this.termoBusca = '';
+    this.resultadosBusca = [];
+    this.nenhumResultado = false;
+  }
+
+ limparHistorico() {
+  this.historicoService.limparHistorico();
+  this.historicoCidades = [];
+ }
+ 
+ removerCidade(cidade: string) {
+  this.historicoService.removerCidade(cidade);
+  this.historicoCidades = this.historicoService.obterHistorico();
+}
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\pipes\descricao-clima.pipe.ts ===
+import { Pipe, PipeTransform } from '@angular/core';
+
+/**
+ * Pipe PERSONALIZADA 1 â€” DescricaoClima
+ * Converte o WMO weather code em texto descritivo em portuguÃªs.
+ * Uso: {{ weatherCode | descricaoClima }}
+ */
+@Pipe({
+  name: 'descricaoClima',
+  standalone: true,
+})
+export class DescricaoClimaPipe implements PipeTransform {
+  private readonly descricoes: Record<number, string> = {
+    0: 'CÃ©u limpo â˜€ï¸',
+    1: 'Predominantemente limpo ðŸŒ¤ï¸',
+    2: 'Parcialmente nublado â›…',
+    3: 'Nublado â˜ï¸',
+    45: 'NÃ©voa ðŸŒ«ï¸',
+    48: 'NÃ©voa com gelo ðŸŒ«ï¸â„ï¸',
+    51: 'Garoa leve ðŸŒ¦ï¸',
+    53: 'Garoa moderada ðŸŒ¦ï¸',
+    55: 'Garoa densa ðŸŒ§ï¸',
+    61: 'Chuva leve ðŸŒ§ï¸',
+    63: 'Chuva moderada ðŸŒ§ï¸',
+    65: 'Chuva forte ðŸŒ§ï¸',
+    71: 'Neve leve ðŸŒ¨ï¸',
+    73: 'Neve moderada ðŸŒ¨ï¸',
+    75: 'Neve forte ðŸŒ¨ï¸',
+    77: 'Granizo ðŸŒ¨ï¸',
+    80: 'Pancada de chuva leve ðŸŒ¦ï¸',
+    81: 'Pancada de chuva moderada ðŸŒ§ï¸',
+    82: 'Pancada de chuva forte â›ˆï¸',
+    85: 'Pancadas de neve ðŸŒ¨ï¸',
+    86: 'Pancadas de neve fortes ðŸŒ¨ï¸',
+    95: 'Tempestade â›ˆï¸',
+    96: 'Tempestade com granizo â›ˆï¸ðŸŒ©ï¸',
+    99: 'Tempestade forte com granizo â›ˆï¸ðŸŒ©ï¸',
+  };
+
+  transform(code: number | null | undefined): string {
+    if (code == null) return 'Sem dados';
+    return this.descricoes[code] ?? `CÃ³digo ${code}`;
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\pipes\nivel-uv.pipe.ts ===
+import { Pipe, PipeTransform } from '@angular/core';
+
+/**
+ * Pipe PERSONALIZADA 2 â€” NivelUv
+ * Converte o Ã­ndice UV numÃ©rico em nÃ­vel de risco com emoji.
+ * Uso: {{ uvIndex | nivelUv }}
+ */
+@Pipe({
+  name: 'nivelUv',
+  standalone: true,
+})
+export class NivelUvPipe implements PipeTransform {
+  transform(uv: number | null | undefined): string {
+    if (uv == null) return 'Sem dados';
+    if (uv <= 2) return `${uv} â€” Baixo ðŸŸ¢`;
+    if (uv <= 5) return `${uv} â€” Moderado ðŸŸ¡`;
+    if (uv <= 7) return `${uv} â€” Alto ðŸŸ `;
+    if (uv <= 10) return `${uv} â€” Muito Alto ðŸ”´`;
+    return `${uv} â€” Extremo ðŸŸ£`;
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\services\clima.service.ts ===
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
+
+// â”€â”€â”€ Interface Geocoding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export interface ResultadoGeocodificacao {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  country: string;
+  country_code: string;
+  admin1?: string; // estado/regiÃ£o
+  population?: number;
+}
+
+export interface RespostaGeocodificacao {
+  results?: ResultadoGeocodificacao[];
+}
+
+export interface ClimaAtual {
+  latitude: number;
+  longitude: number;
+  current: {
+    temperature_2m: number;
+    relative_humidity_2m: number;
+    wind_speed_10m: number;
+    weather_code: number;
+    apparent_temperature: number;
+    precipitation: number;
+    is_day: number;
+    time: string;
+  };
+  current_units: {
+    temperature_2m: string;
+    relative_humidity_2m: string;
+    wind_speed_10m: string;
+    apparent_temperature: string;
+    precipitation: string;
+  };
+}
+
+export interface PrevisaoHoraria {
+  latitude: number;
+  longitude: number;
+  hourly: {
+    time: string[];
+    temperature_2m: number[];
+    precipitation_probability: number[];
+    weather_code: number[];
+    wind_speed_10m: number[];
+    relative_humidity_2m: number[];
+  };
+}
+
+export interface PrevisaoDiaria {
+  latitude: number;
+  longitude: number;
+  daily: {
+    time: string[];
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    weather_code: number[];
+    precipitation_sum: number[];
+    wind_speed_10m_max: number[];
+    uv_index_max: number[];
+    sunrise: string[];
+    sunset: string[];
+  };
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ClimaService {
+  private readonly BASE_URL = 'https://api.open-meteo.com/v1/forecast';
+  private readonly CACHE_SIZE = 1;
+  private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+  // â”€â”€â”€ Cache por chave "lat|lon" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  private cacheAtual = new Map<string, { obs: Observable<ClimaAtual>; ts: number }>();
+  private cacheHorario = new Map<string, { obs: Observable<PrevisaoHoraria>; ts: number }>();
+  private cacheDiario = new Map<string, { obs: Observable<PrevisaoDiaria>; ts: number }>();
+
+  constructor(private http: HttpClient) {}
+
+  private chave(lat: number, lon: number): string {
+    return `${lat.toFixed(4)}|${lon.toFixed(4)}`;
+  }
+
+  private cacheValido<T>(map: Map<string, { obs: Observable<T>; ts: number }>, key: string): Observable<T> | null {
+    const entry = map.get(key);
+    if (entry && Date.now() - entry.ts < this.CACHE_TTL_MS) {
+      return entry.obs;
+    }
+    return null;
+  }
+
+  // â”€â”€â”€ GET 1: Clima atual â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  getClimaAtual(lat: number, lon: number): Observable<ClimaAtual> {
+    const key = this.chave(lat, lon);
+    const cached = this.cacheValido(this.cacheAtual, key);
+    if (cached) return cached;
+
+    const params = new HttpParams()
+      .set('latitude', lat)
+      .set('longitude', lon)
+      .set('current', 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,is_day')
+      .set('timezone', 'America/Sao_Paulo');
+
+    const obs = this.http.get<ClimaAtual>(this.BASE_URL, { params }).pipe(
+      shareReplay(this.CACHE_SIZE)
+    );
+    this.cacheAtual.set(key, { obs, ts: Date.now() });
+    return obs;
+  }
+
+  // â”€â”€â”€ GET 2: PrevisÃ£o horÃ¡ria (prÃ³ximas 24h) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  getPrevisaoHoraria(lat: number, lon: number): Observable<PrevisaoHoraria> {
+    const key = this.chave(lat, lon);
+    const cached = this.cacheValido(this.cacheHorario, key);
+    if (cached) return cached;
+
+    const params = new HttpParams()
+      .set('latitude', lat)
+      .set('longitude', lon)
+      .set('hourly', 'temperature_2m,precipitation_probability,weather_code,wind_speed_10m,relative_humidity_2m')
+      .set('forecast_days', 1)
+      .set('timezone', 'America/Sao_Paulo');
+
+    const obs = this.http.get<PrevisaoHoraria>(this.BASE_URL, { params }).pipe(
+      shareReplay(this.CACHE_SIZE)
+    );
+    this.cacheHorario.set(key, { obs, ts: Date.now() });
+    return obs;
+  }
+
+  // â”€â”€â”€ GET 3: PrevisÃ£o diÃ¡ria (7 dias) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  getPrevisaoDiaria(lat: number, lon: number): Observable<PrevisaoDiaria> {
+    const key = this.chave(lat, lon);
+    const cached = this.cacheValido(this.cacheDiario, key);
+    if (cached) return cached;
+
+    const params = new HttpParams()
+      .set('latitude', lat)
+      .set('longitude', lon)
+      .set('daily', 'temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum,wind_speed_10m_max,uv_index_max,sunrise,sunset')
+      .set('forecast_days', 7)
+      .set('timezone', 'America/Sao_Paulo');
+
+    const obs = this.http.get<PrevisaoDiaria>(this.BASE_URL, { params }).pipe(
+      shareReplay(this.CACHE_SIZE)
+    );
+    this.cacheDiario.set(key, { obs, ts: Date.now() });
+    return obs;
+  }
+
+  // â”€â”€â”€ GET 4: Pesquisa de cidades (Geocoding API) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  buscarCidades(nome: string): Observable<RespostaGeocodificacao> {
+    const params = new HttpParams()
+      .set('name', nome)
+      .set('count', 6)
+      .set('language', 'pt')
+      .set('format', 'json');
+    return this.http.get<RespostaGeocodificacao>('https://geocoding-api.open-meteo.com/v1/search', { params });
+  }
+
+  /** Limpa o cache (usado no botÃ£o "Atualizar") */
+  limparCache(): void {
+    this.cacheAtual.clear();
+    this.cacheHorario.clear();
+    this.cacheDiario.clear();
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\services\historico.ts ===
+
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class HistoricoService {
+
+  private chave = 'historico_cidades';
+
+  // Adicionar cidade ao histÃ³rico
+  adicionarCidade(cidade: string): void {
+    let historico = this.obterHistorico();
+
+    historico = historico.filter(
+      item => item.toLowerCase() !== cidade.toLowerCase()
+    );
+
+    historico.unshift(cidade);
+
+    historico = historico.slice(0, 5);
+
+    localStorage.setItem(
+      this.chave,
+      JSON.stringify(historico)
+    );
+  }
+
+  // Consultar histÃ³rico
+  obterHistorico(): string[] {
+    const dados = localStorage.getItem(this.chave);
+
+    return dados ? JSON.parse(dados) : [];
+  }
+
+  // Remover uma cidade
+  removerCidade(cidade: string): void {
+    const historico = this.obterHistorico();
+
+    const atualizado = historico.filter(
+      item => item !== cidade
+    );
+
+    localStorage.setItem(
+      this.chave,
+      JSON.stringify(atualizado)
+    );
+  }
+
+  // Limpar todo o histÃ³rico
+  limparHistorico(): void {
+    localStorage.removeItem(this.chave);
+  }
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\app.component.html ===
+<ion-app>
+  <ion-router-outlet></ion-router-outlet>
+</ion-app>
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\app.component.scss ===
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\app.component.ts ===
+import { Component } from '@angular/core';
+import { IonApp, IonRouterOutlet } from '@ionic/angular';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: 'app.component.html',
+  imports: [IonApp, IonRouterOutlet],
+})
+export class AppComponent {
+  constructor() {}
+}
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\app\app.routes.ts ===
+import type { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  {
+    path: 'home',
+    loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
+  },
+  {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full',
+  },
+  {
+    path: 'detalhes',
+    loadComponent: () => import('./detalhes/detalhes.page').then((m) => m.DetalhesPage),
+  },
+  {
+    path: 'cidades',
+    loadComponent: () => import('./cidades/cidades.page').then((m) => m.CidadesPage),
+  },
+  {
+    path: 'alertas',
+    loadComponent: () => import('./alertas/alertas.page').then((m) => m.AlertasPage),
+  },
+  {
+    path: 'configuracoes',
+    loadComponent: () => import('./configuracoes/configuracoes.page').then((m) => m.ConfiguracoesPage),
+  },
+];
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\environments\environment.prod.ts ===
+export const environment = {
+  production: true,
+};
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\environments\environment.ts ===
+// This file can be replaced during build by using the `fileReplacements` array.
+// `ng build` replaces `environment.ts` with `environment.prod.ts`.
+// The list of file replacements can be found in `angular.json`.
+
+export const environment = {
+  production: false,
+};
+
+/*
+ * For easier debugging in development mode, you can import the following file
+ * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
+ *
+ * This import should be commented out in production mode because it will have a negative impact
+ * on performance if an error is thrown.
+ */
+// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\theme\variables.scss ===
+// For information on how to create your own theme, please refer to:
+// https://ionicframework.com/docs/theming/
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\global.scss ===
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import '@ionic/angular/css/palettes/dark.system.css';
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\index.html ===
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ionic App</title>
+
+    <base href="/" />
+
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+
+    <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+
+    <!-- add to homescreen for ios -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  </head>
+
+  <body>
+    <app-root></app-root>
+  </body>
+</html>
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\main.ts ===
+import { bootstrapApplication } from '@angular/platform-browser';
+import {
+  RouteReuseStrategy,
+  provideRouter,
+  withComponentInputBinding,
+  withPreloading,
+  PreloadAllModules,
+} from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
+
+registerLocaleData(localePt, 'pt');
+
+import { AppComponent } from './app/app.component';
+import { routes } from './app/app.routes';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: LOCALE_ID, useValue: 'pt' },
+    provideIonicAngular(),
+    provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
+    provideHttpClient(),
+  ],
+});
+
+
+=== C:\Users\mathe\OneDrive\Documents\GitHub\project\clima-app\src\test-setup.ts ===
+// Polyfills for running unit tests under jsdom (the default Vitest environment).
+// Ionic components such as ion-menu and ion-split-pane query `window.matchMedia`,
+// which jsdom does not implement.
+if (!window.matchMedia) {
+  window.matchMedia = (query: string): MediaQueryList =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}
+
