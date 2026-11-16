@@ -1,0 +1,372 @@
+ion-content.weather-bg {
+  --background: linear-gradient(180deg, #ebf5ff 0%, #f8fbff 100%);
+  color: #0f172a;
+}
+
+.main-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+.page-header {
+  margin-bottom: 22px;
+
+  .header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #2596e8;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+
+    ion-icon {
+      font-size: 18px;
+    }
+  }
+
+  .refresh-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: none;
+    background: #ffffff;
+    color: #2596e8;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    cursor: pointer;
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+  }
+}
+
+.search-wrapper {
+  margin-bottom: 26px;
+}
+
+.search-box {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 0 18px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+
+  .search-icon {
+    font-size: 20px;
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+
+  .search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 14px;
+    color: #0f172a;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
+
+  .clear-btn {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.search-dropdown {
+  background: #ffffff;
+  border-radius: 16px;
+  margin-top: 8px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+
+  &.loading-state,
+  &.empty-state {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #64748b;
+  }
+}
+
+.search-result-item {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  h4 {
+    margin: 0 0 3px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .add-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 10px;
+  }
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 16px;
+
+  .section-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .section-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .count-badge {
+    background: #e0f2fe;
+    color: #2596e8;
+    font-size: 13px;
+    font-weight: 700;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.state-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+}
+
+.cities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.city-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+  cursor: pointer;
+}
+
+.city-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  .weather-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: #e0f2fe;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+
+  .city-info {
+    .city-title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+
+      h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .day-pill {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 8px;
+        background: #fef9c3;
+        color: #a16207;
+
+        &.night {
+          background: #1e293b;
+          color: #f8fafc;
+        }
+      }
+    }
+
+    .city-condition {
+      margin: 0 0 6px 0;
+      font-size: 13px;
+      color: #64748b;
+
+      &.error-text {
+        color: #ef4444;
+      }
+    }
+
+    .city-sub-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+    }
+  }
+}
+
+.city-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .temp-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    .city-temp {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.1;
+    }
+
+    .city-feels {
+      font-size: 11px;
+      color: #64748b;
+    }
+  }
+
+  .delete-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: #ef4444;
+      background: #fee2e2;
+    }
+  }
+}
+
+.custom-tab-bar {
+  --background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  height: 64px;
+  padding-bottom: 4px;
+
+  ion-tab-button {
+    --color: #64748b;
+    --color-selected: #1d9bf0;
+    font-size: 11px;
+    font-weight: 600;
+
+    ion-icon {
+      font-size: 20px;
+      margin-bottom: 3px;
+    }
+  }
+
+  .active-tab {
+    color: #1d9bf0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 32px;
+      height: 3px;
+      background: #1d9bf0;
+      border-radius: 0 0 4px 4px;
+    }
+  }
+}

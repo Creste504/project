@@ -35,3 +35,135 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+@import "@ionic/angular/css/core.css";
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+body.dark {
+  ion-content.weather-bg {
+    --background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+  }
+
+  .main-title,
+  .page-title,
+  .section-title,
+  .explore-title,
+  .setting-info h3,
+  .day-name,
+  .cond-value,
+  .temp-max,
+  .sun-row strong,
+  .hour-card,
+  .city-title-row h3,
+  .city-temp,
+  .history-city-name,
+  .search-result-item h4 {
+    color: #f8fafc !important;
+  }
+
+  .date-label,
+  .section-tag,
+  .explore-tag,
+  .setting-info p,
+  .day-date,
+  .day-condition,
+  .cond-label,
+  .cond-sub,
+  .hour-time,
+  .sun-row,
+  .city-condition,
+  .search-result-item p {
+    color: #94a3b8 !important;
+  }
+
+  .settings-card,
+  .days-card,
+  .condition-card,
+  .hour-card:not(.active-hour),
+  .location-btn,
+  .search-box,
+  .city-card,
+  .search-dropdown,
+  .history-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .search-input {
+    color: #f8fafc !important;
+  }
+
+  .setting-row.border-bottom,
+  .day-row,
+  .search-result-item,
+  .history-item {
+    border-bottom-color: #334155 !important;
+  }
+
+  .pill-switch {
+    background: #0f172a !important;
+
+    button {
+      color: #94a3b8 !important;
+
+      &.active {
+        background: #334155 !important;
+        color: #38bdf8 !important;
+      }
+    }
+  }
+
+  .custom-tab-bar {
+    --background: #0f172a !important;
+    border-top-color: #1e293b !important;
+
+    ion-tab-button {
+      --color: #94a3b8;
+    }
+  }
+
+  body.dark {
+  .day-card,
+  .criteria-card,
+  .state-card,
+  .refresh-btn {
+    background: #1e293b !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .criteria-header h3,
+  .temp-pill {
+    color: #f8fafc !important;
+  }
+
+  .extra-grid,
+  .criteria-card p,
+  .criteria-card ul {
+    color: #94a3b8 !important;
+  }
+}
+body.dark {
+  .about-card {
+    background: #1e293b !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .about-header h3 {
+    color: #f8fafc !important;
+  }
+
+  .about-card p {
+    color: #94a3b8 !important;
+  }
+}
+}

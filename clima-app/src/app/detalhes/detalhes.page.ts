@@ -1,35 +1,68 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, type OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
-  IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons,
-  IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonLabel, IonItem,
-  IonList, IonBadge, IonSpinner, IonGrid, IonRow, IonCol, IonButton,
+  IonContent,
+  IonFooter,
+  IonIcon,
+  IonLabel,
+  IonSpinner,
+  IonTabBar,
+  IonTabButton
 } from '@ionic/angular';
-import { ClimaService, ClimaAtual, PrevisaoHoraria } from '../services/clima.service';
-import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
-import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
+import { addIcons } from 'ionicons';
+import {
+  alertCircleOutline,
+  businessOutline,
+  calendarOutline,
+  chevronBackOutline,
+  cloudOutline,
+  locationOutline,
+  partlySunnyOutline,
+  rainyOutline,
+  refreshOutline,
+  settingsOutline,
+  sunnyOutline,
+  thermometerOutline,
+  waterOutline
+} from 'ionicons/icons';
+
 import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
+import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
+import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { type ClimaAtual, ClimaService, type PrevisaoHoraria } from '../services/clima.service';
 
 @Component({
   selector: 'app-detalhes',
   templateUrl: './detalhes.page.html',
   styleUrls: ['./detalhes.page.scss'],
-  // ✅ Otimização 1: OnPush — só re-renderiza quando Input/evento mudar
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,
-    IonButtons, IonBackButton, IonButton, IonCard, IonCardContent, IonCardHeader,
-    IonCardTitle, IonLabel, IonItem, IonList, IonBadge, IonSpinner,
-    IonGrid, IonRow, IonCol,
-    DescricaoClimaPipe, DecimalPipe, DatePipe,
-    FaixaTemperaturaDirective, DestaqueAlertaDirective,
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    IonContent,
+    IonIcon,
+    IonSpinner,
+    IonFooter,
+    IonTabBar,
+    IonTabButton,
+    IonLabel,
+    DescricaoClimaPipe,
+    FaixaTemperaturaDirective,
+    DestaqueAlertaDirective,
+    DecimalPipe,
+    DatePipe
   ],
   providers: [DecimalPipe, DatePipe],
 })
 export class DetalhesPage implements OnInit {
-  // Coordenadas padrão: Recife, PE
+  private climaService = inject(ClimaService);
+  private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
+
   lat = -8.0543;
   lon = -34.8813;
   cidade = 'Recife, PE';
@@ -42,13 +75,25 @@ export class DetalhesPage implements OnInit {
   erroHorario = '';
   horasExibidas: number[] = [];
 
-  constructor(
-    private climaService: ClimaService,
-    private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute
-  ) {}
+  constructor() {
+    addIcons({
+      chevronBackOutline,
+      refreshOutline,
+      locationOutline,
+      partlySunnyOutline,
+      sunnyOutline,
+      rainyOutline,
+      cloudOutline,
+      thermometerOutline,
+      waterOutline,
+      calendarOutline,
+      businessOutline,
+      alertCircleOutline,
+      settingsOutline
+    });
+  }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       if (params['lat'] && params['lon']) {
         this.lat = parseFloat(params['lat']);
@@ -62,14 +107,14 @@ export class DetalhesPage implements OnInit {
     });
   }
 
-  carregarClimaAtual() {
+  carregarClimaAtual(): void {
     this.carregandoAtual = true;
     this.erroAtual = '';
     this.climaService.getClimaAtual(this.lat, this.lon).subscribe({
       next: (data) => {
         this.climaAtual = data;
         this.carregandoAtual = false;
-        this.cdr.markForCheck(); // ✅ notifica OnPush
+        this.cdr.markForCheck();
       },
       error: () => {
         this.erroAtual = 'Falha ao carregar clima atual.';
@@ -79,7 +124,7 @@ export class DetalhesPage implements OnInit {
     });
   }
 
-  carregarPrevisaoHoraria() {
+  carregarPrevisaoHoraria(): void {
     this.carregandoHorario = true;
     this.erroHorario = '';
     this.climaService.getPrevisaoHoraria(this.lat, this.lon).subscribe({
@@ -92,7 +137,7 @@ export class DetalhesPage implements OnInit {
           .slice(0, 8)
           .map((x) => x.i);
         this.carregandoHorario = false;
-        this.cdr.markForCheck(); // ✅ notifica OnPush
+        this.cdr.markForCheck();
       },
       error: () => {
         this.erroHorario = 'Falha ao carregar previsão horária.';
@@ -102,9 +147,25 @@ export class DetalhesPage implements OnInit {
     });
   }
 
-  atualizarTodas() {
+  atualizarTodas(): void {
     this.climaService.limparCache();
     this.carregarClimaAtual();
     this.carregarPrevisaoHoraria();
+  }
+
+  obterIconeClima(code?: number): string {
+    if (code == null) {
+      return 'partly-sunny-outline';
+    }
+    if (code === 0 || code === 1) {
+      return 'sunny-outline';
+    }
+    if (code === 2) {
+      return 'partly-sunny-outline';
+    }
+    if (code >= 51) {
+      return 'rainy-outline';
+    }
+    return 'cloud-outline';
   }
 }

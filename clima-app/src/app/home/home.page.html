@@ -1,144 +1,226 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-title>🌦️ Previsão do Tempo</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true" class="ion-padding">
-
-  <!-- 🔍 Seção de Pesquisa de Cidade com consulta à API -->
-  <ion-card style="margin: 0 0 1.5rem 0;">
-    <ion-card-header>
-      <ion-card-title style="font-size: 1.15rem;">🔍 Pesquisar Cidade</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-searchbar
-        [value]="termoBusca"
-        (ionInput)="onInputBusca($event)"
-        (ionClear)="limparBusca()"
-        placeholder="Ex: Rio de Janeiro, Tokyo, Madrid..."
-        debounce="0"
-        animated="true"
-      ></ion-searchbar>
-      
-<!-- Histórico de Pesquisas -->
-<ion-card style="margin: 0 0 1.5rem 0;">
-
-  <ion-card-header>
-    <ion-card-title style="font-size: 1.15rem;">
-      Histórico de Pesquisas
-    </ion-card-title>
-  </ion-card-header>
-
-  <ion-card-content>
-
-    <!-- Mensagem quando não houver cidades -->
-    @if (historicoCidades.length === 0) {
-      <div
-        style="text-align: center; padding: 1rem; color: var(--ion-color-medium);">
-        Nenhuma cidade pesquisada ainda.
+<ion-content [fullscreen]="true" class="weather-bg">
+  <div class="main-container">
+    <header class="top-header">
+      <div>
+        <span class="date-label">{{ dataHoje | date:'EEEE, d \'de\' MMMM' | uppercase }}</span>
+        <h1 class="main-title">Previsão do Tempo</h1>
       </div>
-    }
+      <button type="button" class="location-btn" routerLink="/cidades" aria-label="Cidades">
+        <ion-icon name="location-outline"></ion-icon>
+      </button>
+    </header>
 
-    <!-- Lista de cidades pesquisadas -->
-    @if (historicoCidades.length > 0) {
-      <ion-list>
-
-        @for (cidade of historicoCidades; track cidade) {
-          <ion-item>
-
-            <ion-label>
-              <h3>{{ cidade }}</h3>
-            </ion-label>
-
-            <!-- Botão para excluir uma cidade -->
-            <ion-button
-              slot="end"
-              fill="clear"
-              color="danger"
-              size="small"
-              (click)="removerCidade(cidade)">
-              Excluir
-            </ion-button>
-
-          </ion-item>
+    <div class="search-wrapper">
+      <div class="search-box">
+        <ion-icon name="search-outline" class="search-icon"></ion-icon>
+        <input
+          type="text"
+          [value]="termoBusca"
+          (input)="onInputBusca($event)"
+          placeholder="Buscar cidade (ex: Recife, São Paulo, Tokyo)..."
+          class="search-input" />
+        @if (termoBusca) {
+          <button type="button" class="clear-btn" (click)="limparBusca()">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </button>
         }
+      </div>
 
-      </ion-list>
+      @if (buscando) {
+        <div class="search-dropdown loading-state">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <span>Consultando API...</span>
+        </div>
+      } @else if (nenhumResultado) {
+        <div class="search-dropdown empty-state">
+          <span>Nenhuma cidade encontrada para "{{ termoBusca }}".</span>
+        </div>
+      } @else if (resultadosBusca.length > 0) {
+        <div class="search-dropdown">
+          @for (cidade of resultadosBusca; track cidade.id) {
+            <div
+              class="search-result-item"
+              role="button"
+              tabindex="0"
+              (click)="selecionarCidade(cidade)"
+              (keyup.enter)="selecionarCidade(cidade)">
+              <div>
+                <h4>{{ cidade.name }}</h4>
+                <p>
+                  {{ cidade.admin1 ? cidade.admin1 + ' - ' : '' }}{{ cidade.country }}
+                  • Lat {{ cidade.latitude | number:'1.2-2' }}, Lon {{ cidade.longitude | number:'1.2-2' }}
+                </p>
+              </div>
+              <span class="result-badge">Ver clima</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
 
-      <!-- Botão para limpar todo o histórico -->
-      <ion-button
-        expand="block"
-        fill="outline"
-        color="danger"
-        (click)="limparHistorico()">
-        Limpar histórico
-      </ion-button>
-    }
+    <div class="dashboard-grid">
+      <div class="hero-weather-card">
+        @if (carregandoClima) {
+          <div class="hero-loading">
+            <ion-spinner name="crescent" color="light"></ion-spinner>
+            <p>Carregando clima atual...</p>
+          </div>
+        } @else if (climaAtual) {
+          <div class="city-badge">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>{{ cidadeAtual }}</span>
+          </div>
 
-  </ion-card-content>
+          <div class="temp-row">
+            <div class="temp-display">
+              <span class="temp-value">{{ climaAtual.current.temperature_2m | number:'1.0-0' }}</span>
+              <span class="temp-unit">{{ climaAtual.current_units.temperature_2m }}</span>
+            </div>
+            <div class="weather-icon-circle">
+              <ion-icon [name]="obterIconeClima(climaAtual.current.weather_code)"></ion-icon>
+            </div>
+          </div>
 
-</ion-card>
+          <p class="condition-text">{{ climaAtual.current.weather_code | descricaoClima }}</p>
 
-<!-- Indicador de carregamento da API -->
-@if (buscando) {
-  <div style="text-align: center; padding: 0.75rem;">
-    <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--ion-color-medium);">
-      Consultando Open-Meteo Geocoding API...
-    </p>
+          <div class="metrics-bar">
+            <div class="metric-item">
+              <span class="metric-label">Sensação</span>
+              <span class="metric-val">{{ climaAtual.current.apparent_temperature | number:'1.0-0' }}°</span>
+            </div>
+            <div class="divider"></div>
+            <div class="metric-item">
+              <span class="metric-label">Umidade</span>
+              <span class="metric-val">{{ climaAtual.current.relative_humidity_2m }}%</span>
+            </div>
+            <div class="divider"></div>
+            <div class="metric-item">
+              <span class="metric-label">Vento</span>
+              <span class="metric-val">{{ climaAtual.current.wind_speed_10m | number:'1.0-0' }} km/h</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="explore-column">
+        <span class="explore-tag">EXPLORAR</span>
+        <h2 class="explore-title">Acesso rápido</h2>
+
+        <div class="nav-cards">
+          <a routerLink="/detalhes" class="nav-card card-blue">
+            <div class="card-icon-box">
+              <ion-icon name="partly-sunny-outline"></ion-icon>
+            </div>
+            <div class="card-info">
+              <h3>Detalhes do Clima</h3>
+              <p>Previsão por hora e condições</p>
+            </div>
+          </a>
+
+          <a routerLink="/cidades" class="nav-card card-mint">
+            <div class="card-icon-box">
+              <ion-icon name="business-outline"></ion-icon>
+            </div>
+            <div class="card-info">
+              <h3>Cidades Salvas</h3>
+              <p>Gerencie seus locais favoritos</p>
+            </div>
+          </a>
+
+          <a routerLink="/alertas" class="nav-card card-amber">
+            <div class="card-icon-box">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+            </div>
+            <div class="card-info">
+              <h3>Alertas e 7 Dias</h3>
+              <p>Previsão semanal e avisos</p>
+            </div>
+          </a>
+
+          <a routerLink="/configuracoes" class="nav-card card-gray">
+            <div class="card-icon-box">
+              <ion-icon name="settings-outline"></ion-icon>
+            </div>
+            <div class="card-info">
+              <h3>Configurações</h3>
+              <p>Unidades e modo escuro</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <section class="history-section">
+      <div class="history-header">
+        <div>
+          <span class="explore-tag">RECENTES</span>
+          <h2 class="explore-title">Histórico de Pesquisas</h2>
+        </div>
+        @if (historicoCidades.length > 0) {
+          <button type="button" class="clear-history-btn" (click)="limparHistorico()">
+            Limpar tudo
+          </button>
+        }
+      </div>
+
+      <div class="history-card">
+        @if (historicoCidades.length === 0) {
+          <div class="history-empty">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>Nenhuma cidade pesquisada ainda.</span>
+          </div>
+        } @else {
+          @for (cidade of historicoCidades; track cidade) {
+            <div
+              class="history-item"
+              role="button"
+              tabindex="0"
+              (click)="abrirCidadeHistorico(cidade)"
+              (keyup.enter)="abrirCidadeHistorico(cidade)">
+              <div class="history-left">
+                <ion-icon name="time-outline"></ion-icon>
+                <span class="history-city-name">{{ cidade }}</span>
+              </div>
+              <button
+                type="button"
+                class="remove-history-btn"
+                (click)="removerCidade($event, cidade)"
+                aria-label="Excluir">
+                <ion-icon name="trash-outline"></ion-icon>
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </section>
   </div>
-}
-
-<!-- Nenhum resultado encontrado -->
-@if (nenhumResultado && !buscando) {
-  <p style="color: var(--ion-color-medium); text-align: center; padding: 0.5rem 0;">
-    Nenhuma cidade encontrada para "{{ termoBusca }}".
-  </p>
-}
-
-<!-- Lista de resultados retornados pela API -->
-@if (resultadosBusca.length > 0) {
-  <ion-list>
-    @for (cidade of resultadosBusca; track cidade.id) {
-      <ion-item
-        button
-        detail="true"
-        (click)="selecionarCidade(cidade)"
-      >
-        <ion-label>
-          <h3><strong>{{ cidade.name }}</strong></h3>
-          <p>{{ cidade.admin1 ? cidade.admin1 + ' - ' : '' }}{{ cidade.country }}</p>
-          <ion-note style="font-size: 0.75rem;">
-            Lat: {{ cidade.latitude | number:'1.2-2' }}, Lon: {{ cidade.longitude | number:'1.2-2' }}
-          </ion-note>
-        </ion-label>
-        <ion-badge slot="end" color="primary">Ver clima</ion-badge>
-      </ion-item>
-    }
-  </ion-list>
-}
-
-</ion-card-content>
-</ion-card>
-
-<!-- Menu Principal -->
-<h2 style="margin: 0 0 1rem; font-size: 1.25rem; font-weight: bold;">Menu Principal</h2>
-
-<ion-button routerLink="/detalhes" expand="block" size="large" style="margin-bottom: 0.75rem;">
-  Ver Detalhes do Clima
-</ion-button>
-
-<ion-button routerLink="/cidades" expand="block" color="secondary" size="large" style="margin-bottom: 0.75rem;">
-  Cidades Salvas
-</ion-button>
-
-<ion-button routerLink="/alertas" expand="block" color="warning" size="large" style="margin-bottom: 0.75rem;">
-  Alertas Meteorológicos
-</ion-button>
-
-<ion-button routerLink="/configuracoes" expand="block" color="medium" size="large">
-  Configurações
-</ion-button>
-
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-tab-bar class="custom-tab-bar">
+    <ion-tab-button routerLink="/home" class="active-tab">
+      <ion-icon name="partly-sunny-outline"></ion-icon>
+      <ion-label>Início</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/detalhes">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <ion-label>Horas</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/cidades">
+      <ion-icon name="business-outline"></ion-icon>
+      <ion-label>Cidades</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/alertas">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <ion-label>7 Dias</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/configuracoes">
+      <ion-icon name="settings-outline"></ion-icon>
+      <ion-label>Ajustes</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-footer>

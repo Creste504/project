@@ -1,61 +1,159 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
-    </ion-buttons>
-    <ion-title>⚙️ Configurações</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="weather-bg">
+  <div class="main-container">
+    <header class="page-header">
+      <a routerLink="/home" class="back-link">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+        <span>Voltar</span>
+      </a>
+      <h1 class="page-title">Configurações</h1>
+    </header>
 
-<ion-content [fullscreen]="true">
+    <section class="section-block">
+      <span class="section-tag">UNIDADES</span>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Preferências de Exibição</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>
+      <div class="settings-card">
+        <div class="setting-row border-bottom">
+          <div class="setting-info">
+            <h3>Temperatura</h3>
+            <p>Unidade de exibição</p>
+          </div>
 
-        <ion-item>
-          <ion-label>Unidade de Temperatura</ion-label>
-          <ion-select [(ngModel)]="unidadeTemperatura" placeholder="Selecionar">
-            <ion-select-option value="celsius">Celsius (°C)</ion-select-option>
-            <ion-select-option value="fahrenheit">Fahrenheit (°F)</ion-select-option>
-          </ion-select>
-        </ion-item>
+          <div class="pill-switch">
+            <button
+              type="button"
+              [class.active]="unidadeTemperatura === 'celsius'"
+              (click)="selecionarTemp('celsius')">
+              °C
+            </button>
+            <button
+              type="button"
+              [class.active]="unidadeTemperatura === 'fahrenheit'"
+              (click)="selecionarTemp('fahrenheit')">
+              °F
+            </button>
+          </div>
+        </div>
 
-        <ion-item>
-          <ion-label>Idioma</ion-label>
-          <ion-select [(ngModel)]="idiomaApp" placeholder="Selecionar">
+        <div class="setting-row">
+          <div class="setting-info">
+            <h3>Velocidade do vento</h3>
+            <p>Unidade de medição</p>
+          </div>
+
+          <div class="pill-switch">
+            <button
+              type="button"
+              [class.active]="unidadeVento === 'kmh'"
+              (click)="selecionarVento('kmh')">
+              km/h
+            </button>
+            <button
+              type="button"
+              [class.active]="unidadeVento === 'mph'"
+              (click)="selecionarVento('mph')">
+              mph
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <span class="section-tag">APARÊNCIA E PREFERÊNCIAS</span>
+
+      <div class="settings-card">
+        <div class="setting-row border-bottom">
+          <div class="appearance-left">
+            <div class="theme-icon-box indigo-box">
+              <ion-icon name="sunny-outline"></ion-icon>
+            </div>
+            <div class="setting-info">
+              <h3>Modo escuro</h3>
+              <p>Reduz o brilho da tela</p>
+            </div>
+          </div>
+
+          <ion-toggle
+            [(ngModel)]="temaEscuro"
+            (ionChange)="alternarModoEscuro()"
+            class="custom-toggle">
+          </ion-toggle>
+        </div>
+
+        <div class="setting-row border-bottom">
+          <div class="appearance-left">
+            <div class="theme-icon-box amber-box">
+              <ion-icon name="notifications-outline"></ion-icon>
+            </div>
+            <div class="setting-info">
+              <h3>Notificações de alertas</h3>
+              <p>Avisos meteorológicos severos</p>
+            </div>
+          </div>
+
+          <ion-toggle [(ngModel)]="notificacoesAtivadas" class="custom-toggle"></ion-toggle>
+        </div>
+
+        <div class="setting-row">
+          <div class="appearance-left">
+            <div class="theme-icon-box blue-box">
+              <ion-icon name="globe-outline"></ion-icon>
+            </div>
+            <div class="setting-info">
+              <h3>Idioma</h3>
+              <p>Idioma da interface</p>
+            </div>
+          </div>
+
+          <ion-select [(ngModel)]="idiomaApp" interface="popover" class="custom-select">
             <ion-select-option value="pt-BR">Português (BR)</ion-select-option>
             <ion-select-option value="en-US">English (US)</ion-select-option>
             <ion-select-option value="es">Español</ion-select-option>
           </ion-select>
-        </ion-item>
+        </div>
+      </div>
+    </section>
 
-        <ion-item>
-          <ion-label>Tema Escuro</ion-label>
-          <ion-toggle [(ngModel)]="temaEscuro" slot="end"></ion-toggle>
-        </ion-item>
+    <section class="section-block">
+      <span class="section-tag">SOBRE O APP</span>
 
-        <ion-item>
-          <ion-label>Notificações de Alertas</ion-label>
-          <ion-toggle [(ngModel)]="notificacoesAtivadas" slot="end"></ion-toggle>
-        </ion-item>
-
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Sobre o App</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>🌍 <strong>Clima App</strong> v1.0.0</p>
-      <p>Dados fornecidos pela <strong>Open-Meteo API</strong> (open-meteo.com)</p>
-      <p>✅ Gratuita, sem chave de API, dados em tempo real.</p>
-    </ion-card-content>
-  </ion-card>
-
+      <div class="about-card">
+        <div class="about-header">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <h3>Clima App v1.0.0</h3>
+        </div>
+        <p>Dados fornecidos pela <strong>Open-Meteo API</strong> (open-meteo.com).</p>
+        <p class="about-sub">Gratuita, sem chave de API, dados meteorológicos em tempo real.</p>
+      </div>
+    </section>
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-tab-bar class="custom-tab-bar">
+    <ion-tab-button routerLink="/home">
+      <ion-icon name="partly-sunny-outline"></ion-icon>
+      <ion-label>Início</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/detalhes">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <ion-label>Horas</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/cidades">
+      <ion-icon name="business-outline"></ion-icon>
+      <ion-label>Cidades</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/alertas">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <ion-label>7 Dias</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/configuracoes" class="active-tab">
+      <ion-icon name="settings-outline"></ion-icon>
+      <ion-label>Ajustes</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-footer>

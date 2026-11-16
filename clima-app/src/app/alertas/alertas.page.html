@@ -1,133 +1,139 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="warning">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
-    </ion-buttons>
-    <ion-title>⚠️ Alertas Meteorológicos</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="recarregar()">🔄</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="weather-bg">
+  <div class="main-container">
+    <header class="page-header">
+      <div class="header-top-row">
+        <a routerLink="/home" class="back-link">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+          <span>Voltar</span>
+        </a>
+        <button type="button" class="refresh-btn" (click)="recarregar()" aria-label="Recarregar">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </button>
+      </div>
+      <span class="date-label">PREVISÃO ESTENDIDA • 7 DIAS</span>
+      <h1 class="page-title">{{ cidade }}</h1>
+    </header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+    @if (carregando) {
+      <div class="state-card">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+        <span>Carregando previsão de 7 dias da API...</span>
+      </div>
+    } @else if (erro) {
+      <div class="state-card error-text">
+        <span>{{ erro }}</span>
+        <button type="button" class="retry-btn" (click)="recarregar()">Tentar novamente</button>
+      </div>
+    } @else if (previsaoDiaria) {
+      <section class="section-block">
+        <div class="list-header">
+          <div>
+            <span class="section-tag">PRÓXIMA SEMANA</span>
+            <h2 class="section-title">Previsão diária</h2>
+          </div>
 
-  <!-- Controle de fluxo moderno: @if / @else -->
-  @if (carregando) {
-    <div style="text-align: center; padding: 2rem;">
-      <ion-spinner name="crescent" color="warning"></ion-spinner>
-      <p style="margin-top: 0.5rem; color: var(--ion-color-medium);">
-        Carregando previsão de 7 dias da API...
-      </p>
-    </div>
-  } @else if (erro) {
-    <ion-card color="danger">
-      <ion-card-content>
-        <p>⚠️ {{ erro }}</p>
-        <ion-button fill="outline" color="light" size="small" (click)="recarregar()">
-          Tentar novamente
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
-  } @else if (previsaoDiaria) {
-    <!-- Lista de 7 dias quando os dados chegam da API -->
-    <ion-card>
-      <ion-card-header>
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-          <ion-card-title style="font-size: 1.2rem;">
-            📅 Previsão 7 Dias — {{ cidade }}
-          </ion-card-title>
-          <ion-button
-            size="small"
-            [fill]="apenasAlertas ? 'solid' : 'outline'"
-            color="warning"
+          <button
+            type="button"
+            class="filter-btn"
+            [class.active-filter]="apenasAlertas"
             (click)="alternarFiltroAlertas()">
-            @if (apenasAlertas) {
-              Mostrar todos os dias
-            } @else {
-              Filtrar apenas alertas ⚠️
-            }
-          </ion-button>
+            <ion-icon name="funnel-outline"></ion-icon>
+            <span>{{ apenasAlertas ? 'Mostrar todos' : 'Apenas alertas' }}</span>
+          </button>
         </div>
-      </ion-card-header>
 
-      <ion-card-content>
-        <ion-list lines="none">
-          <!-- Diretiva estrutural moderna @for com track e @empty -->
+        <div class="days-list">
           @for (i of diasIndices; track i) {
-            <!-- Diretiva personalizada 2: appDestaqueAlerta -->
-            <ion-item [appDestaqueAlerta]="temAlerta(i)">
-              <ion-label class="ion-text-wrap" style="padding: 0.5rem 0;">
-                <!-- Data usando DatePipe builtin -->
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
-                  <h2 style="font-size: 1.1rem; font-weight: bold; margin: 0;">
-                    Dia {{ i + 1 }} — {{ (previsaoDiaria.daily.time[i] + 'T12:00:00') | date:'dd/MM (EEEE)' }}
-                  </h2>
-
-                  @if (temAlerta(i)) {
-                    <ion-badge color="warning">⚠️ Alerta</ion-badge>
-                  } @else {
-                    <ion-badge color="success">🟢 Normal</ion-badge>
-                  }
+            <div class="day-card" [appDestaqueAlerta]="temAlerta(i)">
+              <div class="day-top">
+                <div class="day-left">
+                  <div class="day-icon-box">
+                    <ion-icon [name]="obterIconeClima(previsaoDiaria.daily.weather_code[i])"></ion-icon>
+                  </div>
+                  <div>
+                    <h3 class="day-name">
+                      {{ i === 0 ? 'Hoje' : ((previsaoDiaria.daily.time[i] + 'T12:00:00') | date:'EEEE') }}
+                    </h3>
+                    <span class="day-date">
+                      {{ (previsaoDiaria.daily.time[i] + 'T12:00:00') | date:'dd/MM' }} •
+                      {{ previsaoDiaria.daily.weather_code[i] | descricaoClima }}
+                    </span>
+                  </div>
                 </div>
 
-                <!-- Pipe personalizada 1: descricaoClima -->
-                <p style="font-size: 1rem; font-weight: 600; color: var(--ion-color-primary); margin: 0.25rem 0;">
-                  {{ previsaoDiaria.daily.weather_code[i] | descricaoClima }}
-                </p>
+                @if (temAlerta(i)) {
+                  <span class="status-badge badge-alert">⚠️ Alerta</span>
+                } @else {
+                  <span class="status-badge badge-normal">Normal</span>
+                }
+              </div>
 
-                <!-- Diretiva personalizada 1: appFaixaTemperatura + DecimalPipe -->
-                <p
-                  style="margin: 0.35rem 0;"
-                  [appFaixaTemperatura]="previsaoDiaria.daily.temperature_2m_max[i]">
-                  🌡️ <strong>Máx:</strong> {{ previsaoDiaria.daily.temperature_2m_max[i] | number:'1.1-1' }}°C
-                  &nbsp;|&nbsp;
-                  <strong>Mín:</strong> {{ previsaoDiaria.daily.temperature_2m_min[i] | number:'1.1-1' }}°C
-                </p>
+              <div class="day-metrics">
+                <div class="temp-pill" [appFaixaTemperatura]="previsaoDiaria.daily.temperature_2m_max[i]">
+                  <span>Máx <strong>{{ previsaoDiaria.daily.temperature_2m_max[i] | number:'1.1-1' }}°C</strong></span>
+                  <span>Mín <strong>{{ previsaoDiaria.daily.temperature_2m_min[i] | number:'1.1-1' }}°C</strong></span>
+                </div>
 
-                <!-- Precipitação e vento com DecimalPipe -->
-                <p style="margin: 0.25rem 0;">
-                  🌧️ <strong>Chuva:</strong> {{ previsaoDiaria.daily.precipitation_sum[i] | number:'1.1-1' }} mm
-                  &nbsp;|&nbsp;
-                  💨 <strong>Vento Máx:</strong> {{ previsaoDiaria.daily.wind_speed_10m_max[i] | number:'1.0-0' }} km/h
-                </p>
-
-                <!-- Pipe personalizada 2: nivelUv -->
-                <p style="margin: 0.25rem 0;">
-                  🔆 <strong>Índice UV:</strong> {{ previsaoDiaria.daily.uv_index_max[i] | nivelUv }}
-                </p>
-
-                <!-- Pipe builtin 2: DatePipe para nascer e pôr do sol -->
-                <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--ion-color-medium);">
-                  🌅 Nascer do Sol: {{ previsaoDiaria.daily.sunrise[i] | date:'HH:mm' }}
-                  &nbsp;•&nbsp;
-                  🌇 Pôr do Sol: {{ previsaoDiaria.daily.sunset[i] | date:'HH:mm' }}
-                </p>
-              </ion-label>
-            </ion-item>
+                <div class="extra-grid">
+                  <span>🌧️ Chuva: <strong>{{ previsaoDiaria.daily.precipitation_sum[i] | number:'1.1-1' }} mm</strong></span>
+                  <span>💨 Vento: <strong>{{ previsaoDiaria.daily.wind_speed_10m_max[i] | number:'1.0-0' }} km/h</strong></span>
+                  <span>🔆 UV: <strong>{{ previsaoDiaria.daily.uv_index_max[i] | nivelUv }}</strong></span>
+                  <span>
+                    🌅 {{ previsaoDiaria.daily.sunrise[i] | date:'HH:mm' }} •
+                    🌇 {{ previsaoDiaria.daily.sunset[i] | date:'HH:mm' }}
+                  </span>
+                </div>
+              </div>
+            </div>
           } @empty {
-            <div style="text-align: center; padding: 1.5rem; color: var(--ion-color-medium);">
-              🎉 Nenhum alerta meteorológico encontrado para os próximos dias!
+            <div class="state-card">
+              Nenhum alerta meteorológico encontrado para os próximos dias.
             </div>
           }
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
+        </div>
+      </section>
 
-    <!-- Legenda de Critérios de Alerta -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title style="font-size: 1.05rem;">ℹ️ Critérios de Alerta Meteorológico</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>Um dia recebe o selo <strong>⚠️ Alerta</strong> caso ocorra qualquer uma das condições:</p>
+      <section class="criteria-card">
+        <div class="criteria-header">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <h3>Critérios de Alerta Meteorológico</h3>
+        </div>
+        <p>Um dia recebe o selo de alerta caso ocorra qualquer uma das condições:</p>
         <ul>
           <li>Chuva prevista acumulada &gt; 5 mm</li>
           <li>Índice UV máximo &gt; 7 (Muito Alto / Extremo)</li>
           <li>Código meteorológico severo (tempestades ou pancadas fortes)</li>
         </ul>
-      </ion-card-content>
-    </ion-card>
-  }
-
+      </section>
+    }
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-tab-bar class="custom-tab-bar">
+    <ion-tab-button routerLink="/home">
+      <ion-icon name="partly-sunny-outline"></ion-icon>
+      <ion-label>Início</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/detalhes">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <ion-label>Horas</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/cidades">
+      <ion-icon name="business-outline"></ion-icon>
+      <ion-label>Cidades</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/alertas" class="active-tab">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <ion-label>7 Dias</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/configuracoes">
+      <ion-icon name="settings-outline"></ion-icon>
+      <ion-label>Ajustes</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-footer>

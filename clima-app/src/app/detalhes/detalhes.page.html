@@ -1,120 +1,149 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home" text="Voltar"></ion-back-button>
-    </ion-buttons>
-    <ion-title>⏱️ Próximas Horas</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="atualizarTodas()">🔄</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="weather-bg">
+  <div class="main-container">
+    <header class="page-header">
+      <div class="header-top-row">
+        <a routerLink="/home" class="back-link">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+          <span>Voltar</span>
+        </a>
+        <button type="button" class="refresh-btn" (click)="atualizarTodas()" aria-label="Atualizar">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </button>
+      </div>
+      <span class="date-label">PREVISÃO DETALHADA</span>
+      <h1 class="page-title">{{ cidade }}</h1>
+    </header>
 
-<ion-content [fullscreen]="true">
-
-  <!-- ── Clima Atual ──────────────────────────────────────────────── -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Clima Atual — {{ cidade }}</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-
-      @if (carregandoAtual) {
-        <div style="text-align:center; padding: 1rem;">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Carregando...</p>
-        </div>
-      } @else if (erroAtual) {
-        <p style="color:red;">{{ erroAtual }}</p>
-      } @else if (climaAtual) {
-        <h2 style="font-size: 1.3rem; font-weight: bold;">
-          {{ climaAtual.current.weather_code | descricaoClima }}
-        </h2>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="6">
-              <p>🌡️ <strong>Temperatura</strong></p>
-              <p [appFaixaTemperatura]="climaAtual.current.temperature_2m">
-                {{ climaAtual.current.temperature_2m | number:'1.1-1' }}{{ climaAtual.current_units.temperature_2m }}
-              </p>
-            </ion-col>
-            <ion-col size="6">
-              <p>🤔 <strong>Sensação</strong></p>
-              <p [appFaixaTemperatura]="climaAtual.current.apparent_temperature">
-                {{ climaAtual.current.apparent_temperature | number:'1.1-1' }}{{ climaAtual.current_units.apparent_temperature }}
-              </p>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="6">
-              <p>💧 <strong>Umidade</strong></p>
-              <p>{{ climaAtual.current.relative_humidity_2m }}%</p>
-            </ion-col>
-            <ion-col size="6">
-              <p>💨 <strong>Vento</strong></p>
-              <p>{{ climaAtual.current.wind_speed_10m | number:'1.0-1' }} {{ climaAtual.current_units.wind_speed_10m }}</p>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="6">
-              <p>🌧️ <strong>Precipitação</strong></p>
-              <p>{{ climaAtual.current.precipitation }} {{ climaAtual.current_units.precipitation }}</p>
-            </ion-col>
-            <ion-col size="6">
-              <p>⏰ <strong>Atualizado</strong></p>
-              <p>{{ climaAtual.current.time | date:'HH:mm' }}</p>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      }
-
-    </ion-card-content>
-  </ion-card>
-
-  <!-- ── Previsão Horária ────────────────────────────────────────── -->
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>⏱️ Próximas Horas</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
+    <section class="section-block">
+      <span class="section-tag">PRÓXIMAS HORAS</span>
+      <h2 class="section-title">Previsão horária</h2>
 
       @if (carregandoHorario) {
-        <div style="text-align:center; padding: 1rem;">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Carregando previsão...</p>
+        <div class="state-card">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <span>Carregando previsão horária...</span>
         </div>
       } @else if (erroHorario) {
-        <p style="color:red;">{{ erroHorario }}</p>
+        <div class="state-card error-text">{{ erroHorario }}</div>
       } @else if (previsaoHoraria) {
-        <ion-list>
-          @for (i of horasExibidas; track i) {
-            <ion-item [appDestaqueAlerta]="previsaoHoraria.hourly.precipitation_probability[i] >= 50">
-              <ion-label>
-                <h3>{{ previsaoHoraria.hourly.time[i] | date:'HH:mm' }}</h3>
-                <p>{{ previsaoHoraria.hourly.weather_code[i] | descricaoClima }}</p>
-                <p>
-                  <span [appFaixaTemperatura]="previsaoHoraria.hourly.temperature_2m[i]">
-                    🌡️ {{ previsaoHoraria.hourly.temperature_2m[i] | number:'1.1-1' }}°C
-                  </span>
-                  &nbsp;|&nbsp;
-                  💧 {{ previsaoHoraria.hourly.relative_humidity_2m[i] }}%
-                  &nbsp;|&nbsp;
-                  🌧️ {{ previsaoHoraria.hourly.precipitation_probability[i] }}%
-                </p>
-              </ion-label>
-              <ion-badge slot="end" color="primary">
-                {{ previsaoHoraria.hourly.wind_speed_10m[i] | number:'1.0-0' }} km/h
-              </ion-badge>
-            </ion-item>
-          } @empty {
-            <div style="text-align: center; padding: 1rem; color: var(--ion-color-medium);">
-              Nenhum horário disponível para exibição.
+        <div class="hourly-scroll">
+          @for (i of horasExibidas; track i; let idx = $index) {
+            <div
+              class="hour-card"
+              [class.active-hour]="idx === 0"
+              [appDestaqueAlerta]="previsaoHoraria.hourly.precipitation_probability[i] >= 50">
+              <span class="hour-time">{{ previsaoHoraria.hourly.time[i] | date:'HH:mm' }}</span>
+              <ion-icon [name]="obterIconeClima(previsaoHoraria.hourly.weather_code[i])" class="hour-icon"></ion-icon>
+              <span class="hour-temp">{{ previsaoHoraria.hourly.temperature_2m[i] | number:'1.0-0' }}°</span>
+              <span class="hour-rain">💧 {{ previsaoHoraria.hourly.precipitation_probability[i] }}%</span>
+              <span class="hour-wind">💨 {{ previsaoHoraria.hourly.wind_speed_10m[i] | number:'1.0-0' }} km/h</span>
             </div>
+          } @empty {
+            <div class="state-card">Nenhum horário disponível para exibição.</div>
           }
-        </ion-list>
+        </div>
       }
+    </section>
 
-    </ion-card-content>
-  </ion-card>
+    <section class="section-block">
+      <span class="section-tag">CONDIÇÕES AGORA</span>
+      <h2 class="section-title">Métricas atuais</h2>
 
+      @if (carregandoAtual) {
+        <div class="state-card">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <span>Carregando clima atual...</span>
+        </div>
+      } @else if (erroAtual) {
+        <div class="state-card error-text">{{ erroAtual }}</div>
+      } @else if (climaAtual) {
+        <div class="summary-banner">
+          <div class="summary-left">
+            <ion-icon [name]="obterIconeClima(climaAtual.current.weather_code)"></ion-icon>
+            <div>
+              <strong>{{ climaAtual.current.weather_code | descricaoClima }}</strong>
+              <span>Atualizado às {{ climaAtual.current.time | date:'HH:mm' }}</span>
+            </div>
+          </div>
+          <span class="summary-temp">
+            {{ climaAtual.current.temperature_2m | number:'1.1-1' }}{{ climaAtual.current_units.temperature_2m }}
+          </span>
+        </div>
+
+        <div class="conditions-grid">
+          <div class="condition-card" [appFaixaTemperatura]="climaAtual.current.temperature_2m">
+            <div class="cond-icon-box yellow-box">
+              <ion-icon name="thermometer-outline"></ion-icon>
+            </div>
+            <span class="cond-label">Temperatura</span>
+            <strong class="cond-value">
+              {{ climaAtual.current.temperature_2m | number:'1.1-1' }}{{ climaAtual.current_units.temperature_2m }}
+            </strong>
+            <span class="cond-sub">Medição atual</span>
+          </div>
+
+          <div class="condition-card" [appFaixaTemperatura]="climaAtual.current.apparent_temperature">
+            <div class="cond-icon-box orange-box">
+              <ion-icon name="sunny-outline"></ion-icon>
+            </div>
+            <span class="cond-label">Sensação térmica</span>
+            <strong class="cond-value">
+              {{ climaAtual.current.apparent_temperature | number:'1.1-1' }}{{ climaAtual.current_units.apparent_temperature }}
+            </strong>
+            <span class="cond-sub">Percepção local</span>
+          </div>
+
+          <div class="condition-card">
+            <div class="cond-icon-box blue-box">
+              <ion-icon name="water-outline"></ion-icon>
+            </div>
+            <span class="cond-label">Umidade</span>
+            <strong class="cond-value">{{ climaAtual.current.relative_humidity_2m }}%</strong>
+            <span class="cond-sub">Precipitação: {{ climaAtual.current.precipitation }} {{ climaAtual.current_units.precipitation }}</span>
+          </div>
+
+          <div class="condition-card">
+            <div class="cond-icon-box teal-box">
+              <ion-icon name="cloud-outline"></ion-icon>
+            </div>
+            <span class="cond-label">Vento</span>
+            <div class="wind-row">
+              <strong class="cond-value">{{ climaAtual.current.wind_speed_10m | number:'1.0-1' }}</strong>
+              <span class="wind-unit">{{ climaAtual.current_units.wind_speed_10m }}</span>
+            </div>
+            <span class="cond-sub">Velocidade do ar</span>
+          </div>
+        </div>
+      }
+    </section>
+  </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-tab-bar class="custom-tab-bar">
+    <ion-tab-button routerLink="/home">
+      <ion-icon name="partly-sunny-outline"></ion-icon>
+      <ion-label>Início</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/detalhes" class="active-tab">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <ion-label>Horas</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/cidades">
+      <ion-icon name="business-outline"></ion-icon>
+      <ion-label>Cidades</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/alertas">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <ion-label>7 Dias</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button routerLink="/configuracoes">
+      <ion-icon name="settings-outline"></ion-icon>
+      <ion-label>Ajustes</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-footer>

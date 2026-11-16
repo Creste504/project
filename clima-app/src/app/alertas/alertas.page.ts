@@ -1,66 +1,69 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, type OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
-  IonBackButton,
-  IonButtons,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
+  IonFooter,
+  IonIcon,
   IonLabel,
-  IonItem,
-  IonList,
-  IonBadge,
   IonSpinner,
-  IonButton,
+  IonTabBar,
+  IonTabButton
 } from '@ionic/angular';
-import { ClimaService, PrevisaoDiaria } from '../services/clima.service';
+import { addIcons } from 'ionicons';
+import {
+  alertCircleOutline,
+  businessOutline,
+  calendarOutline,
+  chevronBackOutline,
+  cloudOutline,
+  funnelOutline,
+  informationCircleOutline,
+  partlySunnyOutline,
+  rainyOutline,
+  refreshOutline,
+  settingsOutline,
+  sunnyOutline
+} from 'ionicons/icons';
+
+import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
+import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
 import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
 import { NivelUvPipe } from '../pipes/nivel-uv.pipe';
-import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
-import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
+import { ClimaService, type PrevisaoDiaria } from '../services/clima.service';
 
 @Component({
   selector: 'app-alertas',
   templateUrl: './alertas.page.html',
   styleUrls: ['./alertas.page.scss'],
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
     CommonModule,
     FormsModule,
-    IonButtons,
-    IonBackButton,
-    IonButton,
-    IonCard,
-    IonCardContent,
-    IonCardHeader,
-    IonCardTitle,
-    IonLabel,
-    IonItem,
-    IonList,
-    IonBadge,
+    RouterLink,
+    IonContent,
+    IonIcon,
     IonSpinner,
+    IonFooter,
+    IonTabBar,
+    IonTabButton,
+    IonLabel,
     DescricaoClimaPipe,
     NivelUvPipe,
     FaixaTemperaturaDirective,
     DestaqueAlertaDirective,
     DatePipe,
-    DecimalPipe,
+    DecimalPipe
   ],
   providers: [DatePipe, DecimalPipe],
 })
 export class AlertasPage implements OnInit {
-  // Coordenadas padrão: Recife, PE
+  private climaService = inject(ClimaService);
+  private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
+
   lat = -8.0543;
   lon = -34.8813;
   cidade = 'Recife, PE';
@@ -70,13 +73,24 @@ export class AlertasPage implements OnInit {
   erro = '';
   apenasAlertas = false;
 
-  constructor(
-    private climaService: ClimaService,
-    private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute
-  ) {}
+  constructor() {
+    addIcons({
+      chevronBackOutline,
+      refreshOutline,
+      funnelOutline,
+      partlySunnyOutline,
+      sunnyOutline,
+      rainyOutline,
+      cloudOutline,
+      informationCircleOutline,
+      calendarOutline,
+      businessOutline,
+      alertCircleOutline,
+      settingsOutline
+    });
+  }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       if (params['lat'] && params['lon']) {
         this.lat = parseFloat(params['lat']);
@@ -89,7 +103,7 @@ export class AlertasPage implements OnInit {
     });
   }
 
-  carregarPrevisaoDiaria() {
+  carregarPrevisaoDiaria(): void {
     this.carregando = true;
     this.erro = '';
     this.climaService.getPrevisaoDiaria(this.lat, this.lon).subscribe({
@@ -98,8 +112,7 @@ export class AlertasPage implements OnInit {
         this.carregando = false;
         this.cdr.markForCheck();
       },
-      error: (err) => {
-        console.error('Erro ao buscar previsão diária:', err);
+      error: () => {
         this.erro = 'Falha ao carregar previsão diária da API.';
         this.carregando = false;
         this.cdr.markForCheck();
@@ -107,25 +120,42 @@ export class AlertasPage implements OnInit {
     });
   }
 
-  recarregar() {
+  recarregar(): void {
     this.climaService.limparCache();
     this.carregarPrevisaoDiaria();
   }
 
-  alternarFiltroAlertas() {
+  alternarFiltroAlertas(): void {
     this.apenasAlertas = !this.apenasAlertas;
     this.cdr.markForCheck();
   }
 
   temAlerta(i: number): boolean {
-    if (!this.previsaoDiaria) return false;
+    if (!this.previsaoDiaria) {
+      return false;
+    }
     const d = this.previsaoDiaria.daily;
     return d.precipitation_sum[i] > 5 || d.uv_index_max[i] > 7 || d.weather_code[i] >= 80;
   }
 
   get diasIndices(): number[] {
-    if (!this.previsaoDiaria) return [];
+    if (!this.previsaoDiaria) {
+      return [];
+    }
     const todos = this.previsaoDiaria.daily.time.map((_, i) => i);
     return this.apenasAlertas ? todos.filter((i) => this.temAlerta(i)) : todos;
+  }
+
+  obterIconeClima(code: number): string {
+    if (code === 0 || code === 1) {
+      return 'sunny-outline';
+    }
+    if (code === 2) {
+      return 'partly-sunny-outline';
+    }
+    if (code >= 51) {
+      return 'rainy-outline';
+    }
+    return 'cloud-outline';
   }
 }
