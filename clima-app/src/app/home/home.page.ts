@@ -31,7 +31,10 @@ import { EMPTY, Subject, type Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { TemperaturaPipe } from '../pipes/temperatura.pipe';
+import { VentoPipe } from '../pipes/vento.pipe';
 import { type ClimaAtual, ClimaService, type ResultadoGeocodificacao } from '../services/clima.service';
+import { ConfiguracoesService } from '../services/configuracoes.service';
 import { HistoricoService } from '../services/historico';
 
 @Component({
@@ -51,6 +54,8 @@ import { HistoricoService } from '../services/historico';
     IonTabButton,
     IonLabel,
     DescricaoClimaPipe,
+    TemperaturaPipe,
+    VentoPipe,
     DecimalPipe,
     DatePipe
   ],
@@ -60,6 +65,7 @@ export class HomePage implements OnInit, OnDestroy {
   private climaService = inject(ClimaService);
   private historicoService = inject(HistoricoService);
   private router = inject(Router);
+  public configService = inject(ConfiguracoesService);
 
   lat = -8.0543;
   lon = -34.8813;

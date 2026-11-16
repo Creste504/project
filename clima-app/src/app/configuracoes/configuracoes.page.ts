@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
@@ -26,6 +26,7 @@ import {
   settingsOutline,
   sunnyOutline
 } from 'ionicons/icons';
+import { ConfiguracoesService, UnidadeTemperatura, UnidadeVento } from '../services/configuracoes.service';
 
 @Component({
   selector: 'app-configuracoes',
@@ -48,11 +49,19 @@ import {
   ],
 })
 export class ConfiguracoesPage {
-  unidadeTemperatura: 'celsius' | 'fahrenheit' = 'celsius';
-  unidadeVento: 'kmh' | 'mph' = 'kmh';
+  private configService = inject(ConfiguracoesService);
+
   notificacoesAtivadas = true;
   temaEscuro = false;
   idiomaApp = 'pt-BR';
+
+  get unidadeTemperatura(): UnidadeTemperatura {
+    return this.configService.unidadeTemperatura();
+  }
+
+  get unidadeVento(): UnidadeVento {
+    return this.configService.unidadeVento();
+  }
 
   constructor() {
     addIcons({
@@ -75,12 +84,12 @@ export class ConfiguracoesPage {
     }
   }
 
-  selecionarTemp(unidade: 'celsius' | 'fahrenheit'): void {
-    this.unidadeTemperatura = unidade;
+  selecionarTemp(unidade: UnidadeTemperatura): void {
+    this.configService.setUnidadeTemperatura(unidade);
   }
 
-  selecionarVento(unidade: 'kmh' | 'mph'): void {
-    this.unidadeVento = unidade;
+  selecionarVento(unidade: UnidadeVento): void {
+    this.configService.setUnidadeVento(unidade);
   }
 
   alternarModoEscuro(): void {

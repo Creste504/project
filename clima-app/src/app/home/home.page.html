@@ -73,8 +73,8 @@
 
           <div class="temp-row">
             <div class="temp-display">
-              <span class="temp-value">{{ climaAtual.current.temperature_2m | number:'1.0-0' }}</span>
-              <span class="temp-unit">{{ climaAtual.current_units.temperature_2m }}</span>
+              <span class="temp-value">{{ (climaAtual.current.temperature_2m | temperatura) | number:'1.0-0' }}</span>
+              <span class="temp-unit">{{ configService.simboloTemperatura() }}</span>
             </div>
             <div class="weather-icon-circle">
               <ion-icon [name]="obterIconeClima(climaAtual.current.weather_code)"></ion-icon>
@@ -86,7 +86,7 @@
           <div class="metrics-bar">
             <div class="metric-item">
               <span class="metric-label">Sensação</span>
-              <span class="metric-val">{{ climaAtual.current.apparent_temperature | number:'1.0-0' }}°</span>
+              <span class="metric-val">{{ (climaAtual.current.apparent_temperature | temperatura) | number:'1.0-0' }}°</span>
             </div>
             <div class="divider"></div>
             <div class="metric-item">
@@ -96,7 +96,7 @@
             <div class="divider"></div>
             <div class="metric-item">
               <span class="metric-label">Vento</span>
-              <span class="metric-val">{{ climaAtual.current.wind_speed_10m | number:'1.0-0' }} km/h</span>
+              <span class="metric-val">{{ (climaAtual.current.wind_speed_10m | vento) | number:'1.0-0' }} {{ configService.simboloVento() }}</span>
             </div>
           </div>
         }

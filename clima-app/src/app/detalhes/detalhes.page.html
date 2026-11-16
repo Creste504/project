@@ -34,9 +34,9 @@
               [appDestaqueAlerta]="previsaoHoraria.hourly.precipitation_probability[i] >= 50">
               <span class="hour-time">{{ previsaoHoraria.hourly.time[i] | date:'HH:mm' }}</span>
               <ion-icon [name]="obterIconeClima(previsaoHoraria.hourly.weather_code[i])" class="hour-icon"></ion-icon>
-              <span class="hour-temp">{{ previsaoHoraria.hourly.temperature_2m[i] | number:'1.0-0' }}°</span>
+              <span class="hour-temp">{{ (previsaoHoraria.hourly.temperature_2m[i] | temperatura) | number:'1.0-0' }}°</span>
               <span class="hour-rain">💧 {{ previsaoHoraria.hourly.precipitation_probability[i] }}%</span>
-              <span class="hour-wind">💨 {{ previsaoHoraria.hourly.wind_speed_10m[i] | number:'1.0-0' }} km/h</span>
+              <span class="hour-wind">💨 {{ (previsaoHoraria.hourly.wind_speed_10m[i] | vento) | number:'1.0-0' }} {{ configService.simboloVento() }}</span>
             </div>
           } @empty {
             <div class="state-card">Nenhum horário disponível para exibição.</div>
@@ -66,7 +66,7 @@
             </div>
           </div>
           <span class="summary-temp">
-            {{ climaAtual.current.temperature_2m | number:'1.1-1' }}{{ climaAtual.current_units.temperature_2m }}
+            {{ (climaAtual.current.temperature_2m | temperatura) | number:'1.1-1' }}{{ configService.simboloTemperatura() }}
           </span>
         </div>
 
@@ -77,7 +77,7 @@
             </div>
             <span class="cond-label">Temperatura</span>
             <strong class="cond-value">
-              {{ climaAtual.current.temperature_2m | number:'1.1-1' }}{{ climaAtual.current_units.temperature_2m }}
+              {{ (climaAtual.current.temperature_2m | temperatura) | number:'1.1-1' }}{{ configService.simboloTemperatura() }}
             </strong>
             <span class="cond-sub">Medição atual</span>
           </div>
@@ -88,7 +88,7 @@
             </div>
             <span class="cond-label">Sensação térmica</span>
             <strong class="cond-value">
-              {{ climaAtual.current.apparent_temperature | number:'1.1-1' }}{{ climaAtual.current_units.apparent_temperature }}
+              {{ (climaAtual.current.apparent_temperature | temperatura) | number:'1.1-1' }}{{ configService.simboloTemperatura() }}
             </strong>
             <span class="cond-sub">Percepção local</span>
           </div>
@@ -108,8 +108,8 @@
             </div>
             <span class="cond-label">Vento</span>
             <div class="wind-row">
-              <strong class="cond-value">{{ climaAtual.current.wind_speed_10m | number:'1.0-1' }}</strong>
-              <span class="wind-unit">{{ climaAtual.current_units.wind_speed_10m }}</span>
+              <strong class="cond-value">{{ (climaAtual.current.wind_speed_10m | vento) | number:'1.0-1' }}</strong>
+              <span class="wind-unit">{{ configService.simboloVento() }}</span>
             </div>
             <span class="cond-sub">Velocidade do ar</span>
           </div>

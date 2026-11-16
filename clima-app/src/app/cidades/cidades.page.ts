@@ -34,7 +34,10 @@ import { forkJoin } from 'rxjs';
 import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
 import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
 import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { TemperaturaPipe } from '../pipes/temperatura.pipe';
+import { VentoPipe } from '../pipes/vento.pipe';
 import { type ClimaAtual, ClimaService, type ResultadoGeocodificacao } from '../services/clima.service';
+import { ConfiguracoesService } from '../services/configuracoes.service';
 
 interface CidadeSalva {
   nome: string;
@@ -63,6 +66,8 @@ interface CidadeSalva {
     IonTabButton,
     IonLabel,
     DescricaoClimaPipe,
+    TemperaturaPipe,
+    VentoPipe,
     FaixaTemperaturaDirective,
     DestaqueAlertaDirective,
     DecimalPipe
@@ -73,6 +78,7 @@ export class CidadesPage implements OnInit {
   private climaService = inject(ClimaService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  public configService = inject(ConfiguracoesService);
 
   cidades: CidadeSalva[] = [
     { nome: 'Recife, PE', lat: -8.0543, lon: -34.8813 },

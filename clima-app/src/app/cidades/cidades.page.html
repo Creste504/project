@@ -110,7 +110,7 @@
                   <p class="city-condition">{{ cidade.clima.current.weather_code | descricaoClima }}</p>
                   <div class="city-sub-metrics">
                     <span>💧 {{ cidade.clima.current.relative_humidity_2m }}%</span>
-                    <span>💨 {{ cidade.clima.current.wind_speed_10m | number:'1.0-0' }} km/h</span>
+                    <span>💨 {{ (cidade.clima.current.wind_speed_10m | vento) | number:'1.0-0' }} {{ configService.simboloVento() }}</span>
                     <span>🌧️ {{ cidade.clima.current.precipitation }} mm</span>
                   </div>
                 }
@@ -120,8 +120,8 @@
             <div class="city-right">
               @if (cidade.clima) {
                 <div class="temp-block" [appFaixaTemperatura]="cidade.clima.current.temperature_2m">
-                  <span class="city-temp">{{ cidade.clima.current.temperature_2m | number:'1.1-1' }}°</span>
-                  <span class="city-feels">Sens. {{ cidade.clima.current.apparent_temperature | number:'1.0-0' }}°</span>
+                  <span class="city-temp">{{ (cidade.clima.current.temperature_2m | temperatura) | number:'1.1-1' }}{{ configService.simboloTemperatura() }}</span>
+                  <span class="city-feels">Sens. {{ (cidade.clima.current.apparent_temperature | temperatura) | number:'1.0-0' }}{{ configService.simboloTemperatura() }}</span>
                 </div>
               }
               <button

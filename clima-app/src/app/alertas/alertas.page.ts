@@ -31,7 +31,10 @@ import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive
 import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
 import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
 import { NivelUvPipe } from '../pipes/nivel-uv.pipe';
+import { TemperaturaPipe } from '../pipes/temperatura.pipe';
+import { VentoPipe } from '../pipes/vento.pipe';
 import { ClimaService, type PrevisaoDiaria } from '../services/clima.service';
+import { ConfiguracoesService } from '../services/configuracoes.service';
 
 @Component({
   selector: 'app-alertas',
@@ -52,6 +55,8 @@ import { ClimaService, type PrevisaoDiaria } from '../services/clima.service';
     IonLabel,
     DescricaoClimaPipe,
     NivelUvPipe,
+    TemperaturaPipe,
+    VentoPipe,
     FaixaTemperaturaDirective,
     DestaqueAlertaDirective,
     DatePipe,
@@ -63,6 +68,7 @@ export class AlertasPage implements OnInit {
   private climaService = inject(ClimaService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
+  public configService = inject(ConfiguracoesService);
 
   lat = -8.0543;
   lon = -34.8813;

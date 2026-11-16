@@ -31,7 +31,10 @@ import {
 import { DestaqueAlertaDirective } from '../directives/destaque-alerta.directive';
 import { FaixaTemperaturaDirective } from '../directives/faixa-temperatura.directive';
 import { DescricaoClimaPipe } from '../pipes/descricao-clima.pipe';
+import { TemperaturaPipe } from '../pipes/temperatura.pipe';
+import { VentoPipe } from '../pipes/vento.pipe';
 import { type ClimaAtual, ClimaService, type PrevisaoHoraria } from '../services/clima.service';
+import { ConfiguracoesService } from '../services/configuracoes.service';
 
 @Component({
   selector: 'app-detalhes',
@@ -51,6 +54,8 @@ import { type ClimaAtual, ClimaService, type PrevisaoHoraria } from '../services
     IonTabButton,
     IonLabel,
     DescricaoClimaPipe,
+    TemperaturaPipe,
+    VentoPipe,
     FaixaTemperaturaDirective,
     DestaqueAlertaDirective,
     DecimalPipe,
@@ -62,6 +67,7 @@ export class DetalhesPage implements OnInit {
   private climaService = inject(ClimaService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
+  public configService = inject(ConfiguracoesService);
 
   lat = -8.0543;
   lon = -34.8813;

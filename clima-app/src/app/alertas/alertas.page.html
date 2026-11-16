@@ -70,13 +70,13 @@
 
               <div class="day-metrics">
                 <div class="temp-pill" [appFaixaTemperatura]="previsaoDiaria.daily.temperature_2m_max[i]">
-                  <span>Máx <strong>{{ previsaoDiaria.daily.temperature_2m_max[i] | number:'1.1-1' }}°C</strong></span>
-                  <span>Mín <strong>{{ previsaoDiaria.daily.temperature_2m_min[i] | number:'1.1-1' }}°C</strong></span>
+                  <span>Máx <strong>{{ (previsaoDiaria.daily.temperature_2m_max[i] | temperatura) | number:'1.1-1' }}{{ configService.simboloTemperatura() }}</strong></span>
+                  <span>Mín <strong>{{ (previsaoDiaria.daily.temperature_2m_min[i] | temperatura) | number:'1.1-1' }}{{ configService.simboloTemperatura() }}</strong></span>
                 </div>
 
                 <div class="extra-grid">
                   <span>🌧️ Chuva: <strong>{{ previsaoDiaria.daily.precipitation_sum[i] | number:'1.1-1' }} mm</strong></span>
-                  <span>💨 Vento: <strong>{{ previsaoDiaria.daily.wind_speed_10m_max[i] | number:'1.0-0' }} km/h</strong></span>
+                  <span>💨 Vento: <strong>{{ (previsaoDiaria.daily.wind_speed_10m_max[i] | vento) | number:'1.0-0' }} {{ configService.simboloVento() }}</strong></span>
                   <span>🔆 UV: <strong>{{ previsaoDiaria.daily.uv_index_max[i] | nivelUv }}</strong></span>
                   <span>
                     🌅 {{ previsaoDiaria.daily.sunrise[i] | date:'HH:mm' }} •
