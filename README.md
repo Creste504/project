@@ -153,11 +153,11 @@ O projeto possui testes unitários para as páginas, os services e as pipes de t
 
 | Integrante | Responsabilidade |
 |---|---|
-| (nome) | (requisito) |
-| (nome) | (requisito) |
-| (nome) | (requisito) |
-| (nome) | (requisito) |
-| (nome) | (requisito) |
-| (nome) | Extra: passagem de parâmetro por rota |
+| Cristhian | 3 pages além da home |
+| Caio | Usar uma API (mínimo 3 gets) |
+| Lucas | Mínimo 4 pipes: 2 personalizadas e 2 pipe builtins |
+| Letícia | Dois service em APIs distintas |
+| Lúcio | Duas diretivas personalizadas e duas estruturais |
+| Laysa | Extra: passagem de parâmetro por rota |
 
-Disciplina: Desenvolvimento Mobile. Professor: (nome).
+Disciplina: Códigos de Alta Performance Mobile. Professor: Marlon.
