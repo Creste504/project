@@ -10,6 +10,7 @@
           <ion-icon name="refresh-outline"></ion-icon>
         </button>
       </div>
+      <!--mostra o nome da cidade que chegou pela rota-->
       <h1 class="page-title">Cidades Salvas</h1>
     </header>
 
@@ -79,13 +80,14 @@
       </div>
     } @else {
       <div class="cities-list">
-        @for (cidade of cidades; track cidade.nome + '_' + cidade.lat + '_' + cidade.lon; let idx = $index) {
+        <!--Ao clicar no card da cidade, eu to chamando abrirDetalhesCidade-->
+        @for (cidade of cidades; track cidade.nome + '_' + cidade.lat + '_' + cidade.lon; let idx = $index) { 
           <div
             class="city-card"
             role="button"
             tabindex="0"
             [appDestaqueAlerta]="(cidade.clima?.current?.precipitation ?? 0) > 0"
-            (click)="abrirDetalhesCidade(cidade)"
+            (click)="abrirDetalhesCidade(cidade)" //aqui eu estou chamando o método de abrir detalhes da cidade que criei em cidades.page.ts
             (keyup.enter)="abrirDetalhesCidade(cidade)">
             <div class="city-left">
               <div class="weather-box">

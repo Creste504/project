@@ -224,6 +224,8 @@ export class CidadesPage implements OnInit {
     });
   }
 
+
+//esse método vai ser responsável por permitir que ap clicar, abra a página de detalhes da cidade
   abrirDetalhesCidade(cidade: CidadeSalva): void {
     this.router.navigate(['/detalhes'], {
       queryParams: {

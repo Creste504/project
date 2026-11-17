@@ -66,9 +66,10 @@ import { ConfiguracoesService } from '../services/configuracoes.service';
 export class DetalhesPage implements OnInit {
   private climaService = inject(ClimaService);
   private cdr = inject(ChangeDetectorRef);
-  private route = inject(ActivatedRoute);
+  private route = inject(ActivatedRoute); //guarda os parâmetros que chegaram da URL
   public configService = inject(ConfiguracoesService);
 
+  //esses são os valores padrões para Recife, se n chegar cidade pela rota
   lat = -8.0543;
   lon = -34.8813;
   cidade = 'Recife, PE';
@@ -100,14 +101,17 @@ export class DetalhesPage implements OnInit {
   }
 
   ngOnInit(): void {
+    //recebe os parâmetros enviados pela página de cidades
     this.route.queryParams.subscribe((params) => {
       if (params['lat'] && params['lon']) {
+        //convertendo para número
         this.lat = parseFloat(params['lat']);
         this.lon = parseFloat(params['lon']);
         if (params['cidade']) {
           this.cidade = params['cidade'];
         }
       }
+      //busac p clima da cidade recebida na API
       this.carregarClimaAtual();
       this.carregarPrevisaoHoraria();
     });
