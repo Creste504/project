@@ -6,6 +6,7 @@ import {
   OnChanges,
   OnInit,
   Renderer2,
+  RendererStyleFlags2,
   SimpleChanges,
 } from '@angular/core';
 
@@ -14,7 +15,7 @@ import {
  * Estiliza visualmente itens/cards conforme o estado de alerta meteorológico
  * e adiciona interatividade visual (efeito de elevação e realce ao passar o mouse).
  *
- * Uso: <ion-item [appDestaqueAlerta]="temAlerta(i)">...</ion-item>
+ * Uso: <div [appDestaqueAlerta]="temAlerta(i)">...</div>
  */
 @Directive({
   selector: '[appDestaqueAlerta]',
@@ -52,22 +53,38 @@ export class DestaqueAlertaDirective implements OnInit, OnChanges {
     const elemento = this.el.nativeElement;
 
     if (this.emAlerta) {
-      this.renderer.setStyle(elemento, 'border-left', '4px solid var(--ion-color-warning, #ffc409)');
+      this.renderer.setStyle(
+        elemento,
+        'border-left',
+        '5px solid #ffc409',
+        RendererStyleFlags2.Important
+      );
     } else {
-      this.renderer.setStyle(elemento, 'border-left', '4px solid var(--ion-color-success, #2dd36f)');
+      this.renderer.setStyle(
+        elemento,
+        'border-left',
+        '5px solid #2dd36f',
+        RendererStyleFlags2.Important
+      );
     }
   }
 
   @HostListener('mouseenter')
   onMouseEnter(): void {
     const elemento = this.el.nativeElement;
-    this.renderer.setStyle(elemento, 'transform', 'translateY(-2px)');
+    this.renderer.setStyle(
+      elemento,
+      'transform',
+      'translateY(-2px)',
+      RendererStyleFlags2.Important
+    );
     this.renderer.setStyle(
       elemento,
       'box-shadow',
       this.emAlerta
-        ? '0 4px 12px rgba(255, 196, 9, 0.25)'
-        : '0 4px 12px rgba(0, 0, 0, 0.12)'
+        ? '0 6px 16px rgba(255, 196, 9, 0.35)'
+        : '0 6px 16px rgba(45, 211, 111, 0.22)',
+      RendererStyleFlags2.Important
     );
   }
 

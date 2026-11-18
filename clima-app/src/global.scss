@@ -36,17 +36,6 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
 
-@import "@ionic/angular/css/core.css";
-@import "@ionic/angular/css/normalize.css";
-@import "@ionic/angular/css/structure.css";
-@import "@ionic/angular/css/typography.css";
-@import "@ionic/angular/css/display.css";
-@import "@ionic/angular/css/padding.css";
-@import "@ionic/angular/css/float-elements.css";
-@import "@ionic/angular/css/text-alignment.css";
-@import "@ionic/angular/css/text-transformation.css";
-@import "@ionic/angular/css/flex-utils.css";
-
 body.dark {
   ion-content.weather-bg {
     --background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
@@ -66,7 +55,10 @@ body.dark {
   .city-title-row h3,
   .city-temp,
   .history-city-name,
-  .search-result-item h4 {
+  .search-result-item h4,
+  .criteria-header h3,
+  .temp-pill,
+  .about-header h3 {
     color: #f8fafc !important;
   }
 
@@ -81,7 +73,11 @@ body.dark {
   .hour-time,
   .sun-row,
   .city-condition,
-  .search-result-item p {
+  .search-result-item p,
+  .extra-grid,
+  .criteria-card p,
+  .criteria-card ul,
+  .about-card p {
     color: #94a3b8 !important;
   }
 
@@ -93,10 +89,14 @@ body.dark {
   .search-box,
   .city-card,
   .search-dropdown,
-  .history-card {
-    background: #1e293b !important;
-    border-color: #334155 !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  .history-card,
+  .day-card,
+  .criteria-card,
+  .state-card,
+  .refresh-btn,
+  .about-card {
+    background-color: #1e293b !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 
   .search-input {
@@ -131,39 +131,4 @@ body.dark {
       --color: #94a3b8;
     }
   }
-
-  body.dark {
-  .day-card,
-  .criteria-card,
-  .state-card,
-  .refresh-btn {
-    background: #1e293b !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
-  }
-
-  .criteria-header h3,
-  .temp-pill {
-    color: #f8fafc !important;
-  }
-
-  .extra-grid,
-  .criteria-card p,
-  .criteria-card ul {
-    color: #94a3b8 !important;
-  }
-}
-body.dark {
-  .about-card {
-    background: #1e293b !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
-  }
-
-  .about-header h3 {
-    color: #f8fafc !important;
-  }
-
-  .about-card p {
-    color: #94a3b8 !important;
-  }
-}
 }
